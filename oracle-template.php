@@ -28,8 +28,8 @@ error_reporting(E_ALL);
 // Set some parameters
 
 // Database access configuration
-$config["dbuser"] = "ora_rishavps";			// change "cwl" to your own CWL
-$config["dbpassword"] = "a88594635";	// change to 'a' + your student number
+$config["dbuser"] = "ora_jt3135";		// change "cwl" to your own CWL
+$config["dbpassword"] = "a54932769";	// change to 'a' + your student number
 $config["dbserver"] = "dbhost.students.cs.ubc.ca:1522/stu";
 $db_conn = NULL;	// login credentials are used in connectToDB()
 
@@ -67,8 +67,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 		<input type="submit" value="Insert" name="insertSubmit"></p>
 	</form>
-
-	<hr />
 
 	<h2>Update Name in DemoTable</h2>
 	<p>The values are case sensitive and if you enter in the wrong case, the update statement will not do anything.</p>

@@ -73,12 +73,20 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		Space Agency Name: <input type="text" name="insSpace"> <br /><br />
 		Discovery Method: <input type="text" name="insDisc"> <br /><br />
 
-
 		<input type="submit" value="Insert" name="insertSubmit"></p>
 	</form>
 
 	<hr />
 
+	<h2>Insert Space Agency to delete</h2>
+	<form method="POST" action="exoplanet-explorer.php">
+		<input type="hidden" id="deleteQueryRequest" name="deleteQueryRequest">
+		Name: <input type="text" name="insName"> <br /><br />
+
+		<input type="submit" value="Insert" name="deleteSubmit"></p>
+	</form>
+
+	<hr />
 	<h2>Update Name in DemoTable</h2>
 	<p>The values are case sensitive and if you enter in the wrong case, the update statement will not do anything.</p>
 
@@ -273,6 +281,20 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		oci_commit($db_conn);
 	}
 
+	function handleDeleteRequest()
+	{
+		global $db_conn;
+
+		$SpaceAgencyName = $_POST['insName'];
+
+		$alltuples = array(
+			$tuple
+		);
+
+		executePlainSQL("DELETE FROM SpaceAgency WHERE Name ='" . $SpaceAgencyName . "'");
+		oci_commit($db_conn);
+	}
+
 	function handleCountRequest()
 	{
 		global $db_conn;
@@ -302,6 +324,8 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 				handleUpdateRequest();
 			} else if (array_key_exists('insertQueryRequest', $_POST)) {
 				handleInsertRequest();
+			} else if (array_key_exists('deleteQueryRequest', $_POST)) {
+				handleDeleteRequest();
 			}
 
 			disconnectFromDB();
