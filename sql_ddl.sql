@@ -68,8 +68,6 @@ CREATE TABLE Exoplanet_DiscoveredAt (
         ON DELETE CASCADE
         ON UPDATE CASCADE
     FOREIGN KEY (Mass, Radius) REFERENCES ExoplanetDimensions(Mass, Radius)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
 );
 
 CREATE TABLE Researcher_WorksAt (
