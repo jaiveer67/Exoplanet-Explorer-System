@@ -243,6 +243,16 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	<hr />
 
+	<h2>Join Star_BelongsTo and StellarClass</h2>
+	<form method="POST" action="exoplanet-explorer.php">
+		<input type="hidden" id="joinQueryRequest" name="joinQueryRequest">
+		StellarClass Class: <input type="text" name="StellarClassClass"><br><br>
+
+		<input type="submit" value="Submit" name="joinSubmit"></p>
+	</form>
+
+	<hr />
+
 	<h2>Display Researcher_WorksAt Table</h2>
 	<form method="GET" action="exoplanet-explorer.php">
 		<input type="hidden" id="displayTuplesRequest" name="displayTuplesRequest">
@@ -482,7 +492,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	{
 		global $db_conn;
 
-		if(isset($_POST['selectQuerySubmit'])) {
 			$whereClause = "";
 			$logicalOperator = "";
 	
@@ -520,7 +529,23 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 			$result = executePlainSQL($query);
 
 		oci_commit($db_conn);
-		}
+	}
+
+	function handleJoinRequest()
+	{
+		global $db_conn;
+
+		$stellarClass = $_POST['StellarClassClass'];
+
+		if (!empty($stellarClass)) {
+            $whereClause = "WHERE StellarClassClass = '$stellarClass'";
+        } else {
+            $whereClause = "";
+        }
+
+		$result = executePlainSQL("SELECT * FROM Star_BelongsTo NATURAL JOIN StellarClass $whereClause");
+
+		oci_commit($db_conn);
 	}
 
 	function handleCountRequest()
@@ -563,6 +588,10 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 				handleInsertRequest();
 			} else if (array_key_exists('deleteQueryRequest', $_POST)) {
 				handleDeleteRequest();
+			} else if (array_key_exists('selectQueryRequest', $_POST)) {
+				handleSelectRequest();
+			} else if (array_key_exists('joinQueryRequest', $_POST)) {
+				handleJoinRequest();
 			}
 			disconnectFromDB();
 		}
