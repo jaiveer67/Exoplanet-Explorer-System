@@ -430,4 +430,3 @@ INSERT INTO Orbits(ExoplanetName, StarName) VALUES
 ("HD 209458 b", "HD 209458"),
 ("TRAPPIST-1e", "TRAPPIST-1"),
 ("WASP-1221b", "WASP-121")
-
