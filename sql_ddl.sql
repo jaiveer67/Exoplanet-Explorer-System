@@ -1,4 +1,3 @@
--- Drop table statements
 DROP TABLE Galaxy;
 DROP TABLE Star_BelongsTo;
 DROP TABLE Orbits;
@@ -19,8 +18,7 @@ DROP TABLE WrittenBy;
 DROP TABLE StellarClass;
 DROP TABLE ExoplanetDimensions;
 
--- Create table statements
-CREATE TABLE Galaxy(
+-- Create table statementsCREATE TABLE Galaxy(
     Name VARCHAR[200] PRIMARY KEY,
     Age BIGINT,
     Size BIGINT,

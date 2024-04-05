@@ -267,9 +267,14 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		// Drop old table
 		executePlainSQL("DROP TABLE demoTable");
 
-		// Create new table
-		echo "<br> creating new table <br>";
-		executePlainSQL("CREATE TABLE demoTable (id int PRIMARY KEY, name char(30))");
+		// // Create new table
+		// echo "<br> creating new table <br>";
+		// executePlainSQL("CREATE TABLE demoTable (id int PRIMARY KEY, name char(30))");
+
+		
+		$filename = 'sql_ddl.sql';
+		executeFromFile($filename);
+
 		oci_commit($db_conn);
 	}
 
@@ -333,6 +338,15 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	function handleDisplayRequest()
 	{
+		// global $db_conn;
+		// $result = executePlainSQL("SELECT * FROM demoTable");
+		// printResult($result);
+		displayTable("demoTable")
+	}
+
+
+	function displayTable($tableName)
+	{
 		global $db_conn;
 		$result = executePlainSQL("SELECT * FROM demoTable");
 		printResult($result);
@@ -352,7 +366,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 			} else if (array_key_exists('deleteQueryRequest', $_POST)) {
 				handleDeleteRequest();
 			}
-
 			disconnectFromDB();
 		}
 	}
