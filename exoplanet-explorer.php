@@ -294,7 +294,7 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 		
 		$filename = 'sql_ddl.sql';
-		executeFromFile($filename);
+		// executeFromFile($filename);
 
 		oci_commit($db_conn);
 
@@ -360,7 +360,7 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		// global $db_conn;
 		// $result = executePlainSQL("SELECT * FROM demoTable");
 		// printResult($result);
-		displayTable("demoTable")
+		displayTable("demoTable");
 	}
 
 
@@ -385,7 +385,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 			} else if (array_key_exists('deleteQueryRequest', $_POST)) {
 				handleDeleteRequest();
 			}
-
 			disconnectFromDB();
 		}
 	}

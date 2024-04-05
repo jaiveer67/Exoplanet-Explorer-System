@@ -272,6 +272,14 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		printResult($result);
 	}
 
+			// displayTable("demoTable")
+	// function displayTable($tableName)
+	// {
+	// 	global $db_conn;
+	// 	$result = executePlainSQL("SELECT * FROM "+ $tableName);
+	// 	printResult($result + "WORKSSS");
+	// }
+
 	// HANDLE ALL POST ROUTES
 	// A better coding practice is to have one method that reroutes your requests accordingly. It will make it easier to add/remove functionality.
 	function handlePOSTRequest()
