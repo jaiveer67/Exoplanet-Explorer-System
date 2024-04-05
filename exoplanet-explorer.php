@@ -261,11 +261,46 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		oci_commit($db_conn);
 	}
 
+	function executeFromFile($filename) {
+		global $success;
+		$success = True; // Assume success unless an error occurs
+	
+		// Check if the file exists
+		if (!file_exists($filename)) {
+			echo "File not found: $filename<br>";
+			return false;
+		}
+	
+		// Read the SQL file
+		$sql = file_get_contents($filename);
+		if ($sql === false) {
+			echo "Unable to read the file: $filename<br>";
+			return false;
+		}
+	
+		// Split the SQL file into individual SQL statements
+		$statements = explode(';', $sql);
+		foreach ($statements as $statement) {
+			$statement = trim($statement);
+			// Skip empty statements (which could appear due to the explode if there's a trailing semicolon)
+			if (!empty($statement)) {
+				executePlainSQL($statement);
+				// Check the global success flag to see if the execution was successful
+				if (!$success) {
+					echo "An error occurred executing the statement: $statement<br>";
+					// If one statement fails, you might decide to stop execution or continue; this example stops
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
 	function handleResetRequest()
 	{
 		global $db_conn;
-		// Drop old table
-		executePlainSQL("DROP TABLE demoTable");
+		// // Drop old table
+		// executePlainSQL("DROP TABLE demoTable");
 
 		// // Create new table
 		// echo "<br> creating new table <br>";
@@ -273,9 +308,10 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 		
 		$filename = 'sql_ddl.sql';
-		executeFromFile($filename);
+		// executeFromFile($filename);
 
 		oci_commit($db_conn);
+
 	}
 
 	function handleInsertRequest()
@@ -341,14 +377,14 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		// global $db_conn;
 		// $result = executePlainSQL("SELECT * FROM demoTable");
 		// printResult($result);
-		displayTable("demoTable")
+		displayTable("demoTable");
 	}
 
 
 	function displayTable($tableName)
 	{
 		global $db_conn;
-		$result = executePlainSQL("SELECT * FROM demoTable");
+		$result = executePlainSQL("SELECT * FROM "+ $tableName);
 		printResult($result);
 	}
 
