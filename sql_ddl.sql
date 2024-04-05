@@ -1,260 +1,43 @@
-DROP TABLE IF EXISTS WrittenIn;
-DROP TABLE IF EXISTS WrittenBy;
-DROP TABLE IF EXISTS BookChapter;
-DROP TABLE IF EXISTS ConferenceProceeding;
-DROP TABLE IF EXISTS JournalArticle;
-DROP TABLE IF EXISTS Publication;
-DROP TABLE IF EXISTS Mission;
-DROP TABLE IF EXISTS Observatory;
-DROP TABLE IF EXISTS InitiatedBy;
-DROP TABLE IF EXISTS SpaceProgram;
-DROP TABLE IF EXISTS DiscoveredBy;
-DROP TABLE IF EXISTS Researcher_WorksAt;
-DROP TABLE IF EXISTS Orbits;
-DROP TABLE IF EXISTS Star_BelongsTo;
-DROP TABLE IF EXISTS Exoplanet_DiscoveredAt;
-DROP TABLE IF EXISTS ExoplanetDimensions;
-DROP TABLE IF EXISTS StellarClass;
-DROP TABLE IF EXISTS SpaceAgency;
-DROP TABLE IF EXISTS Galaxy;
+DROP TABLE Orbits;
+DROP TABLE Star_BelongsTo;
+DROP TABLE StellarClass;
+DROP TABLE Galaxy;
+DROP TABLE WrittenBy;
+DROP TABLE DiscoveredBy;
+DROP TABLE Researcher_WorksAt;
+DROP TABLE InitiatedBy;
+DROP TABLE WrittenIn;
+DROP TABLE Exoplanet_DiscoveredAt;
+DROP TABLE SpaceAgency;
+DROP TABLE Observatory;
+DROP TABLE Mission;
+DROP TABLE SpaceProgram;
+DROP TABLE JournalArticle;
+DROP TABLE ConferenceProceeding;
+DROP TABLE BookChapter;
+DROP TABLE Publication;
+DROP TABLE ExoplanetDimensions;
 
+CREATE TABLE StellarClass (Class VARCHAR2(200) PRIMARY KEY, TemperatureRange NUMBER, Colour VARCHAR2(200));
+CREATE TABLE Galaxy(Name VARCHAR2(200) PRIMARY KEY, Age NUMBER, Size_T NUMBER, "Distance from milky way" NUMBER);
+CREATE TABLE Star_BelongsTo (Name VARCHAR2(200) PRIMARY KEY, GalaxyName VARCHAR2(200) NOT NULL, Radius NUMBER, Mass NUMBER, StellarClassClass VARCHAR2(200), FOREIGN KEY (GalaxyName) REFERENCES Galaxy(Name) ON DELETE CASCADE, FOREIGN KEY (StellarClassClass) REFERENCES StellarClass(Class) ON DELETE CASCADE);
+CREATE TABLE SpaceAgency (Name VARCHAR2(200) PRIMARY KEY, Acronym CHAR(100), Region VARCHAR2(200));
+CREATE TABLE SpaceProgram (Name VARCHAR2(200) PRIMARY KEY, Objective VARCHAR2(200));
+CREATE TABLE Observatory (SpaceProgramName VARCHAR2(200) PRIMARY KEY, Location VARCHAR2(200), FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name) ON DELETE CASCADE);
+CREATE TABLE Mission (SpaceProgramName VARCHAR2(200) PRIMARY KEY, LaunchYear INT, Status VARCHAR2(200), FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name) ON DELETE CASCADE);
+CREATE TABLE Publication (ID INT PRIMARY KEY, Title VARCHAR2(200) NOT NULL, PeerReviewed NUMBER(1), Citation VARCHAR2(200) UNIQUE);
+CREATE TABLE JournalArticle (PublicationID INT PRIMARY KEY, DOI VARCHAR2(200), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE);
+CREATE TABLE ConferenceProceeding (PublicationID INT PRIMARY KEY, Location VARCHAR2(200), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE);
+CREATE TABLE BookChapter (PublicationID INT PRIMARY KEY, BookName VARCHAR2(200), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE);
+CREATE TABLE ExoplanetDimensions (Radius NUMBER, Mass NUMBER, Density NUMBER, Volume NUMBER, PRIMARY KEY (Radius, Mass));
+CREATE TABLE Researcher_WorksAt (ID VARCHAR2(200) PRIMARY KEY, Name VARCHAR2(200), Affiliation VARCHAR2(200), EmailAddress VARCHAR2(200) UNIQUE, SpaceAgencyName VARCHAR2(200), FOREIGN KEY (SpaceAgencyName) REFERENCES SpaceAgency(Name) ON DELETE CASCADE);
+CREATE TABLE InitiatedBy (SpaceAgencyName VARCHAR2(200), SpaceProgramName VARCHAR2(200), PRIMARY KEY (SpaceAgencyName, SpaceProgramName), FOREIGN KEY (SpaceAgencyName) REFERENCES SpaceAgency(Name) ON DELETE CASCADE, FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name) ON DELETE CASCADE);
+CREATE TABLE WrittenBy (PublicationID INT, ResearcherID VARCHAR2(200), PRIMARY KEY (PublicationID, ResearcherID), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE, FOREIGN KEY (ResearcherID) REFERENCES Researcher_WorksAt(ID) ON DELETE CASCADE);
+CREATE TABLE Exoplanet_DiscoveredAt (Name VARCHAR2(200) PRIMARY KEY, Type VARCHAR2(200), Mass NUMBER, Radius NUMBER, "Discovery Year" INT, "Light Years from Earth" NUMBER, "Orbital Period" NUMBER, Eccentricity NUMBER, SpaceAgencyName VARCHAR2(200), "Discovery Method" VARCHAR2(200), FOREIGN KEY (SpaceAgencyName) REFERENCES SpaceAgency(Name) ON DELETE CASCADE, FOREIGN KEY (Mass, Radius) REFERENCES ExoplanetDimensions(Mass, Radius) ON DELETE CASCADE);
+CREATE TABLE DiscoveredBy (ResearcherID VARCHAR2(200), ExoplanetName VARCHAR2(200), PRIMARY KEY (ResearcherID, ExoplanetName), FOREIGN KEY (ResearcherID) REFERENCES Researcher_WorksAt(ID) ON DELETE CASCADE, FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(Name) ON DELETE CASCADE);
+CREATE TABLE Orbits (ExoplanetName VARCHAR2(200), StarName VARCHAR2(200), PRIMARY KEY (ExoplanetName, StarName), FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(Name) ON DELETE CASCADE, FOREIGN KEY (StarName) REFERENCES Star_BelongsTo(Name) ON DELETE CASCADE);
+CREATE TABLE WrittenIn (PublicationID INT, ResearcherID VARCHAR2(200), ExoplanetName VARCHAR2(200), PRIMARY KEY (PublicationID, ExoplanetName), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE, FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(Name) ON DELETE CASCADE);
 
--- Create table statements
-CREATE TABLE Galaxy(
-    Name VARCHAR[200] PRIMARY KEY,
-    Age BIGINT,
-    Size BIGINT,
-    "Distance from milky way (light years)" DOUBLE
-);
-
-CREATE TABLE Star_BelongsTo (
-    Name VARCHAR PRIMARY KEY,
-    GalaxyName VARCHAR[200] NOT NULL,
-    Radius DOUBLE,
-    Mass DOUBLE,
-    StellarClassClass VARCHAR[200],
-    FOREIGN KEY (GalaxyName) REFERENCES Galaxy(Name)
-        ON DELETE CASCADE
-        -- ON UPDATE CASCADE,
-    FOREIGN KEY (StellarClassClass) REFERENCES StellarClass(Class)
-        ON DELETE CASCADE
-        -- ON UPDATE CASCADE
-);
-
-CREATE TABLE Orbits (
-    ExoplanetName VARCHAR[200],
-    StarName VARCHAR[200],
-    PRIMARY KEY (ExoplanetName, StarName),
-    FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(Name)
-        ON DELETE CASCADE
-        -- ON UPDATE CASCADE,
-    FOREIGN KEY (StarName) REFERENCES Star_BelongsTo(Name)
-        ON DELETE CASCADE
-        -- ON UPDATE CASCADE
-
-    -- CREATE ASSERTION allStars
-    --     CHECK
-    --     (NOT EXISTS(
-    --         (SELECT StarName FROM Star_BelongsTo)
-    --         EXCEPT
-    --         (SELECT StarName FROM Orbits)
-    --     ))
-
-    -- CREATE ASSERTION allExoplanets
-    --     CHECK
-    --     (NOT EXISTS(
-    --         (SELECT ExoplanetName FROM Exoplanet_DiscoveredAt)
-    --         EXCEPT
-    --         (SELECT ExoplanetName FROM Orbits)
-    --     ))
-);
-
-CREATE TABLE Exoplanet_DiscoveredAt (
-    Name VARCHAR[200] PRIMARY KEY,
-    Type VARCHAR[200],
-    Mass DOUBLE,
-    Radius DOUBLE,
-    "Discovery Year" INT,
-    "Light Years from Earth"   DOUBLE,
-    "Orbital Period" DOUBLE,
-    Eccentricity DOUBLE,
-    SpaceAgencyName VARCHAR[200],
-    "Discovery Method" VARCHAR[200],
-    FOREIGN KEY (SpaceAgencyName) REFERENCES SpaceAgency(Name)
-        ON DELETE CASCADE
-        -- ON UPDATE CASCADE
-    FOREIGN KEY (Mass, Radius) REFERENCES ExoplanetDimensions(Mass, Radius)
-);
-
-CREATE TABLE Researcher_WorksAt (
-    ID VARCHAR[200] PRIMARY KEY,
-    Name VARCHAR[200],
-    Affiliation VARCHAR[200],
-    EmailAddress VARCHAR[200] UNIQUE,
-   SpaceAgencyName VARCHAR[200],
-    FOREIGN KEY (SpaceAgencyName) REFERENCES SpaceAgency(Name)
-        ON DELETE CASCADE
-        -- ON UPDATE CASCADE
-);
-
-CREATE TABLE DiscoveredBy (
-    ResearcherID VARCHAR[200],
-    ExoplanetName VARCHAR[200],
-    PRIMARY KEY (ResearcherID, ExoplanetName),
-    FOREIGN KEY (ResearcherID) REFERENCES Researcher_WorksAt(ID)
-        ON DELETE CASCADE
-        -- ON UPDATE CASCADE,
-    FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(Name)
-        ON DELETE CASCADE
-        -- ON UPDATE CASCADE
-);
-
-CREATE TABLE SpaceAgency (
-    Name VARCHAR[200] PRIMARY KEY,
-    Acronym CHAR(100),
-    Region VARCHAR[200]
-);
-
-CREATE TABLE SpaceProgram (
-    Name VARCHAR[200] PRIMARY KEY,
-    Objective VARCHAR[200]
-);
-
-CREATE TABLE InitiatedBy (
-    SpaceAgencyName VARCHAR[200],
-    SpaceProgramName VARCHAR[200],
-    PRIMARY KEY (SpaceAgencyName, SpaceProgramName),
-    FOREIGN KEY (SpaceAgencyName) REFERENCES SpaceAgency(Name)
-        ON DELETE CASCADE
-        -- ON UPDATE CASCADE,
-    FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name)
-        ON DELETE CASCADE
-        -- ON UPDATE CASCADE
-
-    -- CREATE ASSERTION allSpaceAgencies
-    --     CHECK
-    --     (NOT EXISTS(
-    --         (SELECT SpaceAgencyName FROM SpaceAgency)
-    --         EXCEPT
-    --         (SELECT SpaceAgencyName FROM InitiatedBy)
-    --     ))
-
-    -- CREATE ASSERTION allSpacePrograms
-    --     CHECK
-    --     (NOT EXISTS(
-    --         (SELECT SpaceProgramName FROM SpaceProgram)
-    --         EXCEPT
-    --         (SELECT SpaceProgramName FROM InitiatedBy)
-    --     ))
-);
-
-CREATE TABLE Observatory (
-    SpaceProgramName VARCHAR[200] PRIMARY KEY,
-    Location VARCHAR[200],
-    FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name)
-        ON DELETE CASCADE
-        -- -- ON UPDATE CASCADE
-);
-
-CREATE TABLE Mission (
-    SpaceProgramName VARCHAR[200] PRIMARY KEY,
-    LaunchYear INT,
-    Status VARCHAR[200],
-    FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name)
-        ON DELETE CASCADE
-        -- -- ON UPDATE CASCADE
-);
-
-CREATE TABLE Publication (
-    ID INT PRIMARY KEY,
-    Title VARCHAR[200] NOT NULL,
-    PeerReviewed BOOLEAN,
-    Citation VARCHAR[200] UNIQUE
-);
-
-CREATE TABLE JournalArticle (
-    PublicationID INT PRIMARY KEY,
-    DOI VARCHAR[200],
-    FOREIGN KEY (PublicationID) REFERENCES Publication(ID)
-        ON DELETE CASCADE
-        -- ON UPDATE CASCADE
-);
-
-CREATE TABLE ConferenceProceeding (
-    PublicationID INT PRIMARY KEY,
-    Location VARCHAR[200],
-    FOREIGN KEY (PublicationID) REFERENCES Publication(ID)
-        ON DELETE CASCADE
-        -- ON UPDATE CASCADE
-);
-
-CREATE TABLE BookChapter (
-    PublicationID INT PRIMARY KEY,
-    BookName VARCHAR[200],
-    FOREIGN KEY (PublicationID) REFERENCES Publication(ID)
-        ON DELETE CASCADE
-        -- ON UPDATE CASCADE
-);
-
-CREATE TABLE WrittenBy (
-    PublicationID INT,
-    ResearcherID VARCHAR[200],
-    PRIMARY KEY (PublicationID, ResearcherID),
-    FOREIGN KEY (PublicationID) REFERENCES Publication(ID)
-        ON DELETE CASCADE
-        -- ON UPDATE CASCADE,
-    FOREIGN KEY (ResearcherID) REFERENCES Researcher_WorksAt(ID)
-        ON DELETE CASCADE
-        -- ON UPDATE CASCADE
-);
-
-CREATE TABLE WrittenIn (
-    PublicationID INT,
-    ResearcherID VARCHAR[200],
-  	ExoplanetName VARCHAR[200],
-    PRIMARY KEY (PublicationID, ExoplanetName),
-    FOREIGN KEY (PublicationID) REFERENCES Publication(ID)
-        ON DELETE CASCADE
-        -- ON UPDATE CASCADE,
-    FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(Name)
-        ON DELETE CASCADE
-        -- ON UPDATE CASCADE
-    
-    -- CREATE ASSERTION allPublications
-    --     CHECK
-    --     (NOT EXISTS(
-    --         (SELECT PublicationID FROM Publication)
-    --         EXCEPT
-    --         (SELECT PublicationID FROM WrittenIn)
-    --     ))
-
-    -- CREATE ASSERTION allExoplanets
-    --     CHECK
-    --     (NOT EXISTS(
-    --         (SELECT ExoplanetName FROM Exoplanet_DiscoveredAt)
-    --         EXCEPT
-    --         (SELECT ExoplanetName FROM WrittenIn)
-    --     ))
-);
-
-CREATE TABLE StellarClass (
-    Class VARCHAR[200] PRIMARY KEY,
-    TemperatureRange INT,
-    Colour VARCHAR[200]
-);
-
-CREATE TABLE ExoplanetDimensions (
-    Radius DOUBLE,
-    Mass DOUBLE,
-    Density DOUBLE,
-    Volume DOUBLE,
-    PRIMARY KEY (Radius, Mass)
-    -- CREATE ASSERTION volumeFormula
-);
-
-    
-
--- Insert statements
 INSERT INTO Galaxy(Name, Age, Size, "Distance from milky way (light years)") VALUES 
 ("Andromeda Galaxy (M31)", 10, 220000, 2.537),
 ("Triangulum Galaxy (M33)", 13, 60000, 2.73), 

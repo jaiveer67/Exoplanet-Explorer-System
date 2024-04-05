@@ -60,11 +60,19 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	<hr />
 
-	<h2>Insert Values into DemoTable</h2>
+	<h2>Insert Values for Exoplanets</h2>
 	<form method="POST" action="exoplanet-explorer.php">
 		<input type="hidden" id="insertQueryRequest" name="insertQueryRequest">
-		Number: <input type="text" name="insNo"> <br /><br />
 		Name: <input type="text" name="insName"> <br /><br />
+		Type: <input type="text" name="insType"> <br /><br />
+		Mass: <input type="number" name="insMass"> <br /><br />
+		Radius: <input type="number" name="insRadius"> <br /><br />
+		Discovery Year: <input type="text" name="insYear" step="1"> <br /><br />
+		Light Years from Earth: <input type="number" name="insLight"> <br /><br />
+		Orbital Period: <input type="number" name="insOrb"> <br /><br />
+		Eccentricity: <input type="number" name="insEcc"> <br /><br />
+		Space Agency Name: <input type="text" name="insSpace"> <br /><br />
+		Discovery Method: <input type="text" name="insDisc"> <br /><br />
 
 		<input type="submit" value="Insert" name="insertSubmit"></p>
 	</form>
@@ -319,22 +327,61 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 			echo "Unable to read the file: $filename<br>";
 			return false;
 		}
+
+		executePlainSQL("DROP TABLE Orbits");
+		executePlainSQL("DROP TABLE Star_BelongsTo");
+		executePlainSQL("DROP TABLE StellarClass");
+		executePlainSQL("DROP TABLE Galaxy");
+		executePlainSQL("DROP TABLE WrittenBy");
+		executePlainSQL("DROP TABLE DiscoveredBy");
+		executePlainSQL("DROP TABLE Researcher_WorksAt");
+		executePlainSQL("DROP TABLE InitiatedBy");
+		executePlainSQL("DROP TABLE WrittenIn");
+		executePlainSQL("DROP TABLE Exoplanet_DiscoveredAt");
+		executePlainSQL("DROP TABLE SpaceAgency");
+		executePlainSQL("DROP TABLE Observatory");
+		executePlainSQL("DROP TABLE Mission");
+		executePlainSQL("DROP TABLE SpaceProgram");
+		executePlainSQL("DROP TABLE JournalArticle");
+		executePlainSQL("DROP TABLE ConferenceProceeding");
+		executePlainSQL("DROP TABLE BookChapter");
+		executePlainSQL("DROP TABLE Publication");
+		executePlainSQL("DROP TABLE ExoplanetDimensions");
+		executePlainSQL("CREATE TABLE StellarClass (Class VARCHAR2(200) PRIMARY KEY, TemperatureRange NUMBER, Colour VARCHAR2(200))");
+		executePlainSQL("CREATE TABLE Galaxy(Name VARCHAR2(200) PRIMARY KEY, Age NUMBER, Size_T NUMBER, \"Distance from milky way\" NUMBER)");
+		executePlainSQL("CREATE TABLE Star_BelongsTo (Name VARCHAR2(200) PRIMARY KEY, GalaxyName VARCHAR2(200) NOT NULL, Radius NUMBER, Mass NUMBER, StellarClassClass VARCHAR2(200), FOREIGN KEY (GalaxyName) REFERENCES Galaxy(Name) ON DELETE CASCADE, FOREIGN KEY (StellarClassClass) REFERENCES StellarClass(Class) ON DELETE CASCADE)");
+		executePlainSQL("CREATE TABLE SpaceAgency (Name VARCHAR2(200) PRIMARY KEY, Acronym CHAR(100), Region VARCHAR2(200))");
+		executePlainSQL("CREATE TABLE SpaceProgram (Name VARCHAR2(200) PRIMARY KEY, Objective VARCHAR2(200))");
+		executePlainSQL("CREATE TABLE Observatory (SpaceProgramName VARCHAR2(200) PRIMARY KEY, Location VARCHAR2(200), FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name) ON DELETE CASCADE)");
+		executePlainSQL("CREATE TABLE Mission (SpaceProgramName VARCHAR2(200) PRIMARY KEY, LaunchYear INT, Status VARCHAR2(200), FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name) ON DELETE CASCADE)");
+		executePlainSQL("CREATE TABLE Publication (ID INT PRIMARY KEY, Title VARCHAR2(200) NOT NULL, PeerReviewed NUMBER(1), Citation VARCHAR2(200) UNIQUE)");
+		executePlainSQL("CREATE TABLE JournalArticle (PublicationID INT PRIMARY KEY, DOI VARCHAR2(200), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE)");
+		executePlainSQL("CREATE TABLE ConferenceProceeding (PublicationID INT PRIMARY KEY, Location VARCHAR2(200), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE)");
+		executePlainSQL("CREATE TABLE BookChapter (PublicationID INT PRIMARY KEY, BookName VARCHAR2(200), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE)");
+		executePlainSQL("CREATE TABLE ExoplanetDimensions (Radius NUMBER, Mass NUMBER, Density NUMBER, Volume NUMBER, PRIMARY KEY (Radius, Mass))");
+		executePlainSQL("CREATE TABLE Researcher_WorksAt (ID VARCHAR2(200) PRIMARY KEY, Name VARCHAR2(200), Affiliation VARCHAR2(200), EmailAddress VARCHAR2(200) UNIQUE, SpaceAgencyName VARCHAR2(200), FOREIGN KEY (SpaceAgencyName) REFERENCES SpaceAgency(Name) ON DELETE CASCADE)");
+		executePlainSQL("CREATE TABLE InitiatedBy (SpaceAgencyName VARCHAR2(200), SpaceProgramName VARCHAR2(200), PRIMARY KEY (SpaceAgencyName, SpaceProgramName), FOREIGN KEY (SpaceAgencyName) REFERENCES SpaceAgency(Name) ON DELETE CASCADE, FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name) ON DELETE CASCADE)");
+		executePlainSQL("CREATE TABLE WrittenBy (PublicationID INT, ResearcherID VARCHAR2(200), PRIMARY KEY (PublicationID, ResearcherID), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE, FOREIGN KEY (ResearcherID) REFERENCES Researcher_WorksAt(ID) ON DELETE CASCADE)");
+		executePlainSQL("CREATE TABLE Exoplanet_DiscoveredAt (Name VARCHAR2(200) PRIMARY KEY, Type VARCHAR2(200), Mass NUMBER, Radius NUMBER, \"Discovery Year\" INT, \"Light Years from Earth\" NUMBER, \"Orbital Period\" NUMBER, Eccentricity NUMBER, SpaceAgencyName VARCHAR2(200), \"Discovery Method\" VARCHAR2(200), FOREIGN KEY (SpaceAgencyName) REFERENCES SpaceAgency(Name) ON DELETE CASCADE, FOREIGN KEY (Mass, Radius) REFERENCES ExoplanetDimensions(Mass, Radius) ON DELETE CASCADE)");
+		executePlainSQL("CREATE TABLE DiscoveredBy (ResearcherID VARCHAR2(200), ExoplanetName VARCHAR2(200), PRIMARY KEY (ResearcherID, ExoplanetName), FOREIGN KEY (ResearcherID) REFERENCES Researcher_WorksAt(ID) ON DELETE CASCADE, FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(Name) ON DELETE CASCADE)");
+		executePlainSQL("CREATE TABLE Orbits (ExoplanetName VARCHAR2(200), StarName VARCHAR2(200), PRIMARY KEY (ExoplanetName, StarName), FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(Name) ON DELETE CASCADE, FOREIGN KEY (StarName) REFERENCES Star_BelongsTo(Name) ON DELETE CASCADE)");
+		executePlainSQL("CREATE TABLE WrittenIn (PublicationID INT, ResearcherID VARCHAR2(200), ExoplanetName VARCHAR2(200), PRIMARY KEY (PublicationID, ExoplanetName), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE, FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(Name) ON DELETE CASCADE)");
 	
 		// Split the SQL file into individual SQL statements
-		$statements = explode(';', $sql);
-		foreach ($statements as $statement) {
-			$statement = trim($statement);
-			// Skip empty statements (which could appear due to the explode if there's a trailing semicolon)
-			if (!empty($statement)) {
-				executePlainSQL($statement);
-				// Check the global success flag to see if the execution was successful
-				if (!$success) {
-					echo "An error occurred executing the statement: $statement<br>";
-					// If one statement fails, you might decide to stop execution or continue; this example stops
-					return false;
-				}
-			}
-		}
+		// $statements = explode(';', $sql);
+		// foreach ($statements as $statement) {
+		// 	$statement = trim($statement);
+		// 	// Skip empty statements (which could appear due to the explode if there's a trailing semicolon)
+		// 	if (!empty($statement)) {
+		// 		executePlainSQL($statement);
+		// 		// Check the global success flag to see if the execution was successful
+		// 		if (!$success) {
+		// 			echo "An error occurred executing the statement: $statement<br>";
+		// 			// If one statement fails, you might decide to stop execution or continue; this example stops
+		// 			return false;
+		// 		}
+		// 	}
+		// }
 		return true;
 	}
 
@@ -362,15 +409,23 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 		//Getting the values from user and insert data into the table
 		$tuple = array(
-			":bind1" => $_POST['insNo'],
-			":bind2" => $_POST['insName']
+			":bind1" => $_POST['insName'],
+			":bind2" => $_POST['insType'],
+			":bind3" => $_POST['insMass'],
+			":bind4" => $_POST['insRadius'],
+			":bind5" => $_POST['insYear'],
+			":bind6" => $_POST['insLight'],
+			":bind7" => $_POST['insOrb'],
+			":bind8" => $_POST['insEcc'],
+			":bind9" => $_POST['insSpace'],
+			":bind10" => $_POST['insDisc']
 		);
 
 		$alltuples = array(
 			$tuple
 		);
 
-		executeBoundSQL("insert into demoTable values (:bind1, :bind2)", $alltuples);
+		executeBoundSQL("insert into Exoplanet_DiscoveredAt values (:bind1, :bind2, :bind3, :bind4, :bind5, :bind6, :bind7, :bind8, :bind9, :bind10)", $alltuples);
 		oci_commit($db_conn);
 	}
 
