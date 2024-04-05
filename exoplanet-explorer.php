@@ -120,6 +120,15 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	<hr />
 
+	<h2>Projection Query</h2>
+	<form method="GET" action="exoplanet-explorer.php">
+    <p>Table Name: <input type="text" name="tableName" required></p>
+    <p>Attributes (comma-separated): <input type="text" name="attributes" required></p>
+    <p><input type="submit" value="Project" name="projectionSubmit"></p>
+	</form>
+
+	<hr />
+
 	<?php
 	// The following code will be parsed as PHP
 
@@ -380,11 +389,27 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		displayTable("demoTable");
 	}
 
+	function handleProjectionRequest()
+	{
+
+		// global $db_conn;
+		$attributes = $_GET['attributes'];
+		$tableName = $_GET['tableName'];
+
+		$query = "SELECT DISTINCT " . $attributes . " FROM " . $tableName;
+
+		$result = executePlainSQL($query);
+
+		printResult($result);
+
+
+	}
+
 
 	function displayTable($tableName)
 	{
-		global $db_conn;
-		$result = executePlainSQL("SELECT * FROM "+ $tableName);
+		// global $db_conn;
+		$result = executePlainSQL("SELECT * FROM " . $tableName);
 		printResult($result);
 	}
 
@@ -415,6 +440,8 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 				handleCountRequest();
 			} elseif (array_key_exists('displayTuples', $_GET)) {
 				handleDisplayRequest();
+			} elseif (array_key_exists('projectionSubmit', $_GET)){
+				handleProjectionRequest();
 			}
 
 			disconnectFromDB();
