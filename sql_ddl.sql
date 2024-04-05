@@ -15,6 +15,7 @@ DROP TABLE JournalArticle
 DROP TABLE ConferenceProceeding
 DROP TABLE BookChapter
 DROP TABLE WrittenIn
+DROP TABLE WrittenBy
 DROP TABLE StellarClass
 DROP TABLE ExoplanetDimensions
 
@@ -51,6 +52,22 @@ CREATE TABLE Orbits (
     FOREIGN KEY (StarName) REFERENCES Star_BelongsTo(Name)
         ON DELETE CASCADE
         ON UPDATE CASCADE
+
+    CREATE ASSERTION allStars
+        CHECK
+        (NOT EXISTS(
+            (SELECT StarName FROM Star_BelongsTo)
+            EXCEPT
+            (SELECT StarName FROM Orbits)
+        ))
+
+    CREATE ASSERTION allExoplanets
+        CHECK
+        (NOT EXISTS(
+            (SELECT ExoplanetName FROM Exoplanet_DiscoveredAt)
+            EXCEPT
+            (SELECT ExoplanetName FROM Orbits)
+        ))
 );
 
 CREATE TABLE Exoplanet_DiscoveredAt (
@@ -114,6 +131,22 @@ CREATE TABLE InitiatedBy (
     FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name)
         ON DELETE CASCADE
         ON UPDATE CASCADE
+
+    CREATE ASSERTION allSpaceAgencies
+        CHECK
+        (NOT EXISTS(
+            (SELECT SpaceAgencyName FROM SpaceAgency)
+            EXCEPT
+            (SELECT SpaceAgencyName FROM InitiatedBy)
+        ))
+
+    CREATE ASSERTION allSpacePrograms
+        CHECK
+        (NOT EXISTS(
+            (SELECT SpaceProgramName FROM SpaceProgram)
+            EXCEPT
+            (SELECT SpaceProgramName FROM InitiatedBy)
+        ))
 );
 
 CREATE TABLE Observatory (
@@ -164,7 +197,7 @@ CREATE TABLE BookChapter (
         ON UPDATE CASCADE
 );
 
-CREATE TABLE WrittenIn (
+CREATE TABLE WrittenBy (
     PublicationID INT,
     ResearcherID VARCHAR[200],
     PRIMARY KEY (PublicationID, ResearcherID),
@@ -174,6 +207,34 @@ CREATE TABLE WrittenIn (
     FOREIGN KEY (ResearcherID) REFERENCES Researcher_WorksAt(ID)
         ON DELETE CASCADE
         ON UPDATE CASCADE
+);
+
+CREATE TABLE WrittenIn (
+    PublicationID INT,
+    ResearcherID VARCHAR[200],
+    PRIMARY KEY (PublicationID, ExoplanetName),
+    FOREIGN KEY (PublicationID) REFERENCES Publication(ID)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(ID)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+    
+    CREATE ASSERTION allPublications
+        CHECK
+        (NOT EXISTS(
+            (SELECT PublicationID FROM Publication)
+            EXCEPT
+            (SELECT PublicationID FROM WrittenIn)
+        ))
+
+    CREATE ASSERTION allExoplanets
+        CHECK
+        (NOT EXISTS(
+            (SELECT ExoplanetName FROM Exoplanet_DiscoveredAt)
+            EXCEPT
+            (SELECT ExoplanetName FROM WrittenIn)
+        ))
 );
 
 CREATE TABLE StellarClass (
@@ -188,6 +249,8 @@ CREATE TABLE ExoplanetDimensions (
     Density DOUBLE,
     Volume DOUBLE,
     PRIMARY KEY (Radius, Mass));
+
+    CREATE ASSERTION volumeFormula
 
 -- Insert statements
 INSERT INTO Galaxy(Name, Age, Size, "Distance from milky way (light years)") VALUES 
@@ -347,12 +410,19 @@ INSERT INTO Mission(SpaceProgramName, LaunchYear, Status) VALUES
 ("ASTROSAT (not directly exoplanet-focused but significant for astrophysical studies)", 2015, "Active"),
 ("NEOSSat (Near-Earth Object Surveillance Satellite)", 2013, "Active")
 
-INSERT INTO WrittenIn(PublicationID, ResearcherID) VALUES 
+INSERT INTO WrittenBy(PublicationID, ResearcherID) VALUES 
 (1, "1"),
 (2, "3"),
 (3, "8"),
 (4, "9"),
 (5, "13")
+
+INSERT INTO WrittenIn(PublicationID, ExoplanetName) VALUES
+(1, "Proxima Centauri b"),
+(2, "Kepler-452b"),
+(3, "HD 209458 b"),
+(4, "TRAPPIST-1e"),
+(5, "WASP-1221b")
 
 INSERT INTO Orbits(ExoplanetName, StarName) VALUES 
 ("Proxima Centauri b", "Proxima Centauri"),
