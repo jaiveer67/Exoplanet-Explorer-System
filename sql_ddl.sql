@@ -1,24 +1,23 @@
 -- Drop table statements
-DROP TABLE Galaxy
-DROP TABLE Star_BelongsTo
-DROP TABLE Orbits
-DROP TABLE Exoplanet_DiscoveredAt
-DROP TABLE Researcher_WorksAt
-DROP TABLE DiscoveredBy
-DROP TABLE SpaceAgency
-DROP TABLE SpaceProgram
-DROP TABLE InitiatedBy
-DROP TABLE Observatory
-DROP TABLE Mission
-DROP TABLE Publication
-DROP TABLE JournalArticle
-DROP TABLE ConferenceProceeding
-DROP TABLE BookChapter
-DROP TABLE WrittenIn
-DROP TABLE WrittenBy
-DROP TABLE StellarClass
-DROP TABLE ExoplanetDimensions
-
+DROP TABLE Galaxy;
+DROP TABLE Star_BelongsTo;
+DROP TABLE Orbits;
+DROP TABLE Exoplanet_DiscoveredAt;
+DROP TABLE Researcher_WorksAt;
+DROP TABLE DiscoveredBy;
+DROP TABLE SpaceAgency;
+DROP TABLE SpaceProgram;
+DROP TABLE InitiatedBy;
+DROP TABLE Observatory;
+DROP TABLE Mission;
+DROP TABLE Publication;
+DROP TABLE JournalArticle;
+DROP TABLE ConferenceProceeding;
+DROP TABLE BookChapter;
+DROP TABLE WrittenIn;
+DROP TABLE WrittenBy;
+DROP TABLE StellarClass;
+DROP TABLE ExoplanetDimensions;
 
 -- Create table statements
 CREATE TABLE Galaxy(
@@ -248,9 +247,11 @@ CREATE TABLE ExoplanetDimensions (
     Mass DOUBLE,
     Density DOUBLE,
     Volume DOUBLE,
-    PRIMARY KEY (Radius, Mass));
+    PRIMARY KEY (Radius, Mass)
+    -- CREATE ASSERTION volumeFormula
+);
 
-    CREATE ASSERTION volumeFormula
+    
 
 -- Insert statements
 INSERT INTO Galaxy(Name, Age, Size, "Distance from milky way (light years)") VALUES 
@@ -262,7 +263,7 @@ INSERT INTO Galaxy(Name, Age, Size, "Distance from milky way (light years)") VAL
 ("Large Magellanic Cloud (LMC)", 13.5, 14000, 0.163), 
 ("Small Magellanic Cloud (SMC)", 13, 7000, 0.2), 
 ("Messier 87 (M87)", 13.5, 98000, 53.5),
-("Milky Way Galaxy", 13.51, 105700, 0)
+("Milky Way Galaxy", 13.51, 105700, 0);
 
 INSERT INTO SpaceAgency(Name, Acronym, Region) VALUES 
 ("National Aeronautics and Space Administration", "NASA", "USA"),
@@ -270,7 +271,7 @@ INSERT INTO SpaceAgency(Name, Acronym, Region) VALUES
 ("Canadian Space Agency", "CSA", "Canada"),
 ("Indian Space Research Organisation", "ISRO", "India"),
 ("Japan Aerospace Exploration Agency", "JAXA", "Japan"),
-("French Space Agency", "CNES", "France")
+("French Space Agency", "CNES", "France");
 
 INSERT INTO Publication(ID, Title, PeerReviewed, Citation) VALUES 
 (1, "Discovery of Proxima Centauri b", 1, "Smith et al., 2020"),
@@ -287,28 +288,28 @@ INSERT INTO Publication(ID, Title, PeerReviewed, Citation) VALUES
 (12, "Methods for Detecting Exoplanets Using Radial Velocity", 1, "Garcia & Smith, 2018"),
 (13, "Exoplanet Atmospheres: Observations and Models", 1, "Brown et al., 2019"),
 (14, "Characterization of Exoplanetary Systems", 0, "Wilson & Jones, 2020"),
-(15, "Exoplanet Habitability: Conditions and Constraints", 1, "Martinez & Taylor, 2016")
+(15, "Exoplanet Habitability: Conditions and Constraints", 1, "Martinez & Taylor, 2016");
 
 INSERT INTO JournalArticle(PublicationID, DOI) VALUES 
 (1, "10.1038/nature19106"),
 (2, "10.1126/science.aad8189"),
 (3, "10.1088/0004-637X/680/2/1450"),
 (4, "10.1126/science.aah6511"),
-(5, "10.1093/mnras/stx1287")
+(5, "10.1093/mnras/stx1287");
 
 INSERT INTO ConferenceProceeding(PublicationID, Location) VALUES 
 (6, "Houston, Texas"),
 (7, "Cape Town, South Africa"),
 (8, "Paris, France"),
 (9, "Tokyo, Japan"),
-(10, "Sydney, Australia")
+(10, "Sydney, Australia");
 
 INSERT INTO BookChapter(PublicationID, BookName) VALUES 
 (11, "Exoplanet Exploration: A Comprehensive Guide"),
 (12, "Advances in Exoplanet Research: Techniques and Discoveries"),
 (13, "Planetary Science: Recent Advances and Future Directions"),
 (14, "The Encyclopedia of Exoplanets"),
-(15, "The Handbook of Exoplanetology")
+(15, "The Handbook of Exoplanetology");
 
 INSERT INTO StellarClass(Class, TemperatureRange, Colour) VALUES 
 ("O", ">30000", "Blue"),
@@ -317,14 +318,14 @@ INSERT INTO StellarClass(Class, TemperatureRange, Colour) VALUES
 ("F", "6000-7500", "White-Yellow"),
 ("G", "5200-6000", "Yellow"),
 ("K", "3400-4900", "Orange-Red"),
-("M", "2100-3400", "Red")
+("M", "2100-3400", "Red");
 
 INSERT INTO ExoplanetDimensions(Radius, Mass, Density, Volume) VALUES 
 (1.17, 1.1, 0.05465441321, 20.12646254),
 (1.6, 1.5, 0.02914214046, 51.47185404),
 (1.35, 1.35, 0.04366390757, 30.9179841),
 (0.62, 0.92, 0.307187044, 2.994917976),
-(0.18, 0.001, 0.01364497112, 0.07328707342)
+(0.18, 0.001, 0.01364497112, 0.07328707342);
 
 INSERT INTO SpaceProgram(Name, Objective) VALUES 
 ("Kepler", "Discover Earth-like planets orbiting other stars."),	
@@ -336,7 +337,7 @@ INSERT INTO SpaceProgram(Name, Objective) VALUES
 ("PLATO (PLAnetary Transits and Oscillations of stars)", "Detect and characterize a large number of exoplanetary systems, with a focus on discovering and characterizing Earth-sized planets and super-Earths."),
 ("COROT (Convection, Rotation and planetary Transits)", "The first mission dedicated to the search for exoplanets, it aimed to find Earth-sized planets."),
 ("ASTROSAT (not directly exoplanet-focused but significant for astrophysical studies)", "India's first dedicated multi-wavelength space observatory."),
-("NEOSSat (Near-Earth Object Surveillance Satellite)", "Canada's satellite to track asteroids and near-Earth objects.")
+("NEOSSat (Near-Earth Object Surveillance Satellite)", "Canada's satellite to track asteroids and near-Earth objects.");
 
 INSERT INTO Star_BelongsTo(Name, GalaxyName, Radius,
  Mass, StellarClassClass) VALUES 
@@ -344,14 +345,14 @@ INSERT INTO Star_BelongsTo(Name, GalaxyName, Radius,
 ("Kepler-452", "Milky Way Galaxy", 1.11, 1.04, "G"),
 ("HD 209458", "Milky Way Galaxy", 1.203, 1.148, "G"),
 ("TRAPPIST-1", "Milky Way Galaxy", 0.1192, 0.0898, "F"),
-("WASP-121", "Milky Way Galaxy", 1.458, 1.353, "M")
+("WASP-121", "Milky Way Galaxy", 1.458, 1.353, "M");
 
 INSERT INTO Exoplanet_DiscoveredAt(Name, Type, Mass, Radius, "Discovery Year", "Light Years from Earth", "Orbital Period", Eccentricity, SpaceAgencyName, "Discovery Method") VALUES 
 ("Proxima Centauri b", "Terrestrial", 1.1, 1.17, "2016-08-24", 4.24, 11.2, 0.35, "European Space Agency", "Radial Velocity"),
 ("Kepler-452b", "Terrestrial", 1.5, 1.6, "2015-07-23", 1402, 384.8, 0, "National Aeronautics and Space Administration", "Transit"),
 ("HD 209458 b", "Gas Giant", 1.35, 1.35, "1999-11-05", 153, 3.52, 0, "European Space Agency", "Transit"),
 ("TRAPPIST-1e", "Terrestrial", 0.92, 0.62, "2017-02-22", 39.6, 6.1, 0.08, "National Aeronautics and Space Administration", "Transit"),
-("WASP-1221b", "Neptune-like", 0.001, 0.18, "2015-06-02", 880, 1.27, 0, "National Aeronautics and Space Administration", "Transit")
+("WASP-1221b", "Neptune-like", 0.001, 0.18, "2015-06-02", 880, 1.27, 0, "National Aeronautics and Space Administration", "Transit");
 
 INSERT INTO Researcher_WorksAt(ID, Name, Affiliation, EmailAddress, SpaceAgencyName) VALUES 
 ("1", "Guillem Anglada-Escudé", "University of London", "anglada@eso.org", "European Space Agency"),
@@ -366,7 +367,7 @@ INSERT INTO Researcher_WorksAt(ID, Name, Affiliation, EmailAddress, SpaceAgencyN
 ("10", "Jon M. Jenkins", "NASA Ames Research Center", "jon@nasa.gov", "National Aeronautics and Space Administration"),
 ("11", "Timothy M. Brown", "Las Cumbres Observatory", "timothy@lco.global", "National Aeronautics and Space Administration"),
 ("12", "Michaël Gillon", "University of Liège", "michael@uliege.be", "National Aeronautics and Space Administration"),
-("13", "Laura Kreidberg", "University of California, Santa Cruz", "laura@ucsc.edu", "National Aeronautics and Space Administration")
+("13", "Laura Kreidberg", "University of California, Santa Cruz", "laura@ucsc.edu", "National Aeronautics and Space Administration");
 
 INSERT INTO DiscoveredBy(ResearcherID, ExoplanetName) VALUES 
 ("1", "Proxima Centauri b"),
@@ -376,7 +377,7 @@ INSERT INTO DiscoveredBy(ResearcherID, ExoplanetName) VALUES
 ("5", "TRAPPIST-1e"),
 ("6", "TRAPPIST-1e"),
 ("7", "WASP-1221b"),
-("8", "WASP-1221b")
+("8", "WASP-1221b");
 
 INSERT INTO InitiatedBy(SpaceAgencyName, SpaceProgramName) VALUES 
 ("National Aeronautics and Space Administration", "Kepler"),
@@ -388,7 +389,7 @@ INSERT INTO InitiatedBy(SpaceAgencyName, SpaceProgramName) VALUES
 ("European Space Agency", "PLATO (PLAnetary Transits and Oscillations of stars)"),
 ("European Space Agency", "COROT (Convection, Rotation and planetary Transits)"),
 ("Indian Space Research Organisation", "ASTROSAT (not directly exoplanet-focused but significant for astrophysical studies)"),
-("Canadian Space Agency", "NEOSSat (Near-Earth Object Surveillance Satellite)")
+("Canadian Space Agency", "NEOSSat (Near-Earth Object Surveillance Satellite)");
 
 INSERT INTO Observatory(SpaceProgramName, Location) VALUES 
 ("Kepler", "USA"),
@@ -396,7 +397,7 @@ INSERT INTO Observatory(SpaceProgramName, Location) VALUES
 ("CHEOPS (CHaracterising ExOPlanet Satellite)", "Switzerland"),
 ("PLATO (PLAnetary Transits and Oscillations of stars)", "France"),
 ("COROT (Convection, Rotation and planetary Transits)", "France"),
-("ASTROSAT (not directly exoplanet-focused but significant for astrophysical studies)", "India")
+("ASTROSAT (not directly exoplanet-focused but significant for astrophysical studies)", "India");
 
 INSERT INTO Mission(SpaceProgramName, LaunchYear, Status) VALUES 
 ("Kepler", 2009, "Inactive"),
@@ -408,25 +409,25 @@ INSERT INTO Mission(SpaceProgramName, LaunchYear, Status) VALUES
 ("PLATO (PLAnetary Transits and Oscillations of stars)", 2026, "Upcoming"),
 ("COROT (Convection, Rotation and planetary Transits)", 2006, "Inactive"),
 ("ASTROSAT (not directly exoplanet-focused but significant for astrophysical studies)", 2015, "Active"),
-("NEOSSat (Near-Earth Object Surveillance Satellite)", 2013, "Active")
+("NEOSSat (Near-Earth Object Surveillance Satellite)", 2013, "Active");
 
 INSERT INTO WrittenBy(PublicationID, ResearcherID) VALUES 
 (1, "1"),
 (2, "3"),
 (3, "8"),
 (4, "9"),
-(5, "13")
+(5, "13");
 
 INSERT INTO WrittenIn(PublicationID, ExoplanetName) VALUES
 (1, "Proxima Centauri b"),
 (2, "Kepler-452b"),
 (3, "HD 209458 b"),
 (4, "TRAPPIST-1e"),
-(5, "WASP-1221b")
+(5, "WASP-1221b");
 
 INSERT INTO Orbits(ExoplanetName, StarName) VALUES 
 ("Proxima Centauri b", "Proxima Centauri"),
 ("Kepler-452b", "Kepler-452"),
 ("HD 209458 b", "HD 209458"),
 ("TRAPPIST-1e", "TRAPPIST-1"),
-("WASP-1221b", "WASP-121")
+("WASP-1221b", "WASP-121");
