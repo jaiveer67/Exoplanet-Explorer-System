@@ -107,18 +107,159 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	<hr />
 
-	<h2>Select from Exoplanet_DiscoveredAt</h2>
+	<h2>Select from Exoplanet_DiscoveredAt WHERE</h2>
 	</p>
 
 	<form method="POST" action="exoplanet-explorer.php">
 		<input type="hidden" id="selectQueryRequest" name="selectQueryRequest">
-        WHERE: <input type="text" name="Where"> <br><br>
+        Name: 
+    <select name="NameOperator">
+        <option value="=">=</option>
+    </select>
+    <input type="text" name="Name"> <br><br>
+	<select name="NameLogicalOperator">
+		<option value=""></option>
+        <option value="AND">AND</option>
+        <option value="OR">OR</option>
+    </select><br><br>
+    Type: 
+    <select name="TypeOperator">
+        <option value="=">=</option>
+    </select>
+    <input type="text" name="Type"> <br><br>
+	<select name="SelectLogicalOperator
+	">
+		<option value=""></option>
+        <option value="AND">AND</option>
+        <option value="OR">OR</option>
+    </select><br><br>
+    Mass: 
+    <select name="MassOperator">
+        <option value="=">=</option>
+        <option value="<">&lt;</option>
+        <option value="<=">&le;</option>
+        <option value=">">&gt;</option>
+        <option value=">=">&ge;</option>
+    </select>
+    <input type="text" name="Mass"> <br><br>
+	<select name="SelectLogicalOperator
+	">
+		<option value=""></option>
+        <option value="AND">AND</option>
+        <option value="OR">OR</option>
+    </select><br><br>
+    Radius: 
+    <select name="RadiusOperator">
+        <option value="=">=</option>
+        <option value="<">&lt;</option>
+        <option value="<=">&le;</option>
+        <option value=">">&gt;</option>
+        <option value=">=">&ge;</option>
+    </select>
+    <input type="text" name="Radius"> <br><br>
+	<select name="SelectLogicalOperator
+	">
+		<option value=""></option>
+        <option value="AND">AND</option>
+        <option value="OR">OR</option>
+    </select><br><br>
+    Discovery Year: 
+    <select name="DiscoveryYearOperator">
+        <option value="=">=</option>
+        <option value="<">&lt;</option>
+        <option value="<=">&le;</option>
+        <option value=">">&gt;</option>
+        <option value=">=">&ge;</option>
+    </select>
+    <input type="text" name="DiscoveryYear"> <br><br>
+	<select name="SelectLogicalOperator
+	">
+		<option value=""></option>
+        <option value="AND">AND</option>
+        <option value="OR">OR</option>
+    </select><br><br>
+    Light Years From Earth: 
+    <select name="LightYearsFromEarthOperator">
+        <option value="=">=</option>
+        <option value="<">&lt;</option>
+        <option value="<=">&le;</option>
+        <option value=">">&gt;</option>
+        <option value=">=">&ge;</option>
+    </select>
+    <input type="text" name="LightYearsFromEarth"> <br><br>
+	<select name="SelectLogicalOperator
+	">
+		<option value=""></option>
+        <option value="AND">AND</option>
+        <option value="OR">OR</option>
+    </select><br><br>
+    Orbital Period: 
+    <select name="OrbitalPeriodOperator">
+        <option value="=">=</option>
+        <option value="<">&lt;</option>
+        <option value="<=">&le;</option>
+        <option value=">">&gt;</option>
+        <option value=">=">&ge;</option>
+    </select>
+    <input type="text" name="OrbitalPeriod"> <br><br>
+	<select name="SelectLogicalOperator
+	">
+		<option value=""></option>
+        <option value="AND">AND</option>
+        <option value="OR">OR</option>
+    </select><br><br>
+    Eccentricity: 
+    <select name="EccentricityOperator">
+        <option value="=">=</option>
+        <option value="<">&lt;</option>
+        <option value="<=">&le;</option>
+        <option value=">">&gt;</option>
+        <option value=">=">&ge;</option>
+    </select>
+    <input type="text" name="Eccentricity"> <br><br>
+	<select name="SelectLogicalOperator
+	">
+		<option value=""></option>
+        <option value="AND">AND</option>
+        <option value="OR">OR</option>
+    </select><br><br>
+    SpaceAgency Name: 
+    <select name="SpaceAgencyNameOperator">
+        <option value="=">=</option>
+    </select>
+    <input type="text" name="SpaceAgencyName"> <br><br>
+	<select name="SelectLogicalOperator
+	">
+		<option value=""></option>
+        <option value="AND">AND</option>
+        <option value="OR">OR</option>
+    </select><br><br>
+    Discovery Method: 
+    <select name="DiscoveryMethodOperator">
+        <option value="=">=</option>
+    </select>
+    <input type="text" name="DiscoveryMethod"> <br><br>
+	<select name="SelectLogicalOperator
+	">
+		<option value=""></option>
+        <option value="AND">AND</option>
+        <option value="OR">OR</option>
+    </select><br><br>
 
 		<input type="submit" value="Submit" name="selectQuerySubmit"></p>
 	</form>
 
 	<hr />
 
+	<h2>Join Star_BelongsTo and StellarClass</h2>
+	<form method="POST" action="exoplanet-explorer.php">
+		<input type="hidden" id="joinQueryRequest" name="joinQueryRequest">
+		StellarClass Class: <input type="text" name="StellarClassClass"><br><br>
+
+		<input type="submit" value="Submit" name="joinSubmit"></p>
+	</form>
+
+	<hr />
 
 	<h2>Display a Table</h2>
 	<form method="GET" action="exoplanet-explorer.php">
@@ -439,7 +580,8 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 			$tuple
 		);
 
-		executePlainSQL("DELETE FROM SpaceAgency WHERE Name ='" . $SpaceAgencyName . "'");
+		$result = executePlainSQL("DELETE FROM SpaceAgency WHERE Name ='" . $SpaceAgencyName . "'");
+
 		oci_commit($db_conn);
 	}
 
@@ -447,14 +589,59 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	{
 		global $db_conn;
 
-		$whereClause = $_POST['Where'];
-		$SelectRequest = "SELECT * FROM Exoplanet_DiscoveredAt";
-		
-		if (!empty($whereClause)) {
-			$SelectRequest .= " WHERE $whereClause";
-		}
+			$whereClause = "";
+			$logicalOperator = "";
 	
-		executePlainSQL($SelectRequest);
+			$fields = array(
+				"Name" => array("Operator" => $_POST["NameOperator"], "Value" => $_POST["Name"]),
+				"Type" => array("Operator" => $_POST["TypeOperator"], "Value" => $_POST["Type"]),
+				"Mass" => array("Operator" => $_POST["MassOperator"], "Value" => $_POST["Mass"]),
+				"Radius" => array("Operator" => $_POST["RadiusOperator"], "Value" => $_POST["Radius"]),
+				"DiscoveryYear" => array("Operator" => $_POST["DiscoveryYearperator"], "Value" => $_POST["DiscoveryYear"]),
+				"LightYearsFromEarth" => array("Operator" => $_POST["LightYearsFromEarthOperator"], "Value" => $_POST["LightYearsFromEarth"]),
+				"OrbitalPeriod" => array("Operator" => $_POST["OrbitalPeriodOperator"], "Value" => $_POST["OrbitalPeriod"]),
+				"Eccentricity" => array("Operator" => $_POST["EccentricityOperator"], "Value" => $_POST["Eccentricity"]),
+				"SpaceAgencyName" => array("Operator" => $_POST["SpaceAgencyNameOperator"], "Value" => $_POST["SpaceAgencyName"]),
+				"DiscoveryMethod" => array("Operator" => $_POST["DiscoveryMethodOperator"], "Value" => $_POST["DiscoveryMethod"]),
+			);
+	
+			foreach ($fields as $field => $options) {
+				$operator = $options["Operator"];
+				$value = $options["Value"];
+	
+				if (!empty($value)) {
+					if (!empty($whereClause)) {
+						$whereClause .= $logicalOperator;
+					}
+					$whereClause .= "$field $operator '$value'";
+					$logicalOperator = $_POST[$field . "LogicalOperator"];
+				}
+			}
+	
+			$query = "SELECT * FROM Exoplanet_DiscoveredAt";
+			if (!empty($whereClause)) {
+				$query .= " WHERE $whereClause";
+			}
+	
+			$result = executePlainSQL($query);
+
+		oci_commit($db_conn);
+	}
+
+	function handleJoinRequest()
+	{
+		global $db_conn;
+
+		$stellarClass = $_POST['StellarClassClass'];
+
+		if (!empty($stellarClass)) {
+            $whereClause = "WHERE StellarClassClass = '$stellarClass'";
+        } else {
+            $whereClause = "";
+        }
+
+		$result = executePlainSQL("SELECT * FROM Star_BelongsTo NATURAL JOIN StellarClass $whereClause");
+
 		oci_commit($db_conn);
 	}
 
@@ -514,6 +701,10 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 				handleInsertRequest();
 			} else if (array_key_exists('deleteQueryRequest', $_POST)) {
 				handleDeleteRequest();
+			} else if (array_key_exists('selectQueryRequest', $_POST)) {
+				handleSelectRequest();
+			} else if (array_key_exists('joinQueryRequest', $_POST)) {
+				handleJoinRequest();
 			}
 			disconnectFromDB();
 		}
