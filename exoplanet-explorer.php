@@ -27,6 +27,7 @@ error_reporting(E_ALL);
 
 // Set some parameters
 
+
 // Database access configuration
 $config["dbuser"] = "ora_jt3135";		// change "cwl" to your own CWL
 $config["dbpassword"] = "a54932769";	// change to 'a' + your student number
@@ -59,20 +60,11 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	<hr />
 
-	<h2>Insert Values into Exoplanet_DiscoveredAt</h2>
+	<h2>Insert Values into DemoTable</h2>
 	<form method="POST" action="exoplanet-explorer.php">
 		<input type="hidden" id="insertQueryRequest" name="insertQueryRequest">
+		Number: <input type="text" name="insNo"> <br /><br />
 		Name: <input type="text" name="insName"> <br /><br />
-		Type: <input type="text" name="insType"> <br /><br />
-		Mass: <input type="number" name="insMass"> <br /><br />
-		Radius: <input type="number" name="insRadius"> <br /><br />
-		Discovery Year: <input type="text" name="insYear" step="1"> <br /><br />
-		Light Years from Earth: <input type="number" name="insLight"> <br /><br />
-		Orbital Period: <input type="number" name="insOrb"> <br /><br />
-		Eccentricity: <input type="number" name="insEcc"> <br /><br />
-		Space Agency Name: <input type="text" name="insSpace"> <br /><br />
-		Discovery Method: <input type="text" name="insDisc"> <br /><br />
-
 
 		<input type="submit" value="Insert" name="insertSubmit"></p>
 	</form>
@@ -107,11 +99,17 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	<hr />
 
-	<h2>Count the Tuples in DemoTable</h2>
-	<form method="GET" action="exoplanet-explorer.php">
-		<input type="hidden" id="countTupleRequest" name="countTupleRequest">
-		<input type="submit" name="countTuples"></p>
+	<h2>Select from Exoplanet_DiscoveredAt</h2>
+	</p>
+
+	<form method="POST" action="exoplanet-explorer.php">
+		<input type="hidden" id="selectQueryRequest" name="selectQueryRequest">
+        WHERE: <input type="text" name="Where"> <br><br>
+
+		<input type="submit" value="Submit" name="selectQuerySubmit"></p>
 	</form>
+
+	<hr />
 
 
 	<h2>Display Researcher_WorksAt Table</h2>
@@ -263,63 +261,17 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		oci_commit($db_conn);
 	}
 
-
-
-	function executeFromFile($filename) {
-		global $success;
-		$success = True; // Assume success unless an error occurs
-	
-		// Check if the file exists
-		if (!file_exists($filename)) {
-			echo "File not found: $filename<br>";
-			return false;
-		}
-	
-		// Read the SQL file
-		$sql = file_get_contents($filename);
-		if ($sql === false) {
-			echo "Unable to read the file: $filename<br>";
-			return false;
-		}
-	
-		// Split the SQL file into individual SQL statements
-		$statements = explode(';', $sql);
-		foreach ($statements as $statement) {
-			$statement = trim($statement);
-			// Skip empty statements (which could appear due to the explode if there's a trailing semicolon)
-			if (!empty($statement)) {
-				executePlainSQL($statement);
-				// Check the global success flag to see if the execution was successful
-				if (!$success) {
-					echo "An error occurred executing the statement: $statement<br>";
-					// If one statement fails, you might decide to stop execution or continue; this example stops
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
 	function handleResetRequest()
 	{
 		global $db_conn;
-		// // Drop old table
-		// executePlainSQL("DROP TABLE demoTable");
+		// Drop old table
+		executePlainSQL("DROP TABLE demoTable");
 
-		// // Create new table
-		// echo "<br> creating new table <br>";
-		// executePlainSQL("CREATE TABLE demoTable (id int PRIMARY KEY, name char(30))");
-
-		
-		$filename = 'sql_ddl.sql';
-		executeFromFile($filename);
-
+		// Create new table
+		echo "<br> creating new table <br>";
+		executePlainSQL("CREATE TABLE demoTable (id int PRIMARY KEY, name char(30))");
 		oci_commit($db_conn);
-
 	}
-	
-	
-	
 
 	function handleInsertRequest()
 	{
@@ -327,24 +279,15 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 		//Getting the values from user and insert data into the table
 		$tuple = array(
-			":bind1" => $_POST['insName'],
-			":bind2" => $_POST['insType'],
-			":bind3" => $_POST['insMass'],
-			":bind4" => $_POST['insRadius'],
-			":bind5" => $_POST['insYear'],
-			":bind6" => $_POST['insLight'],
-			":bind7" => $_POST['insOrb'],
-			":bind8" => $_POST['insEcc'],
-			":bind9" => $_POST['insSpace'],
-			":bind10" => $_POST['insDisc']
-
+			":bind1" => $_POST['insNo'],
+			":bind2" => $_POST['insName']
 		);
 
 		$alltuples = array(
 			$tuple
 		);
 
-		executeBoundSQL("insert into Exoplanet_DiscoveredAt values (:bind1, :bind2, :bind3, :bind4, :bind5, :bind6, :bind7, :bind8, :bind9, :bind10)", $alltuples);
+		executeBoundSQL("insert into demoTable values (:bind1, :bind2)", $alltuples);
 		oci_commit($db_conn);
 	}
 
@@ -362,6 +305,21 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		oci_commit($db_conn);
 	}
 
+	function handleSelectRequest()
+	{
+		global $db_conn;
+
+		$whereClause = $_POST['Where'];
+		$SelectRequest = "SELECT * FROM Exoplanet_DiscoveredAt";
+		
+		if (!empty($whereClause)) {
+			$SelectRequest .= " WHERE $whereClause";
+		}
+	
+		executePlainSQL($SelectRequest);
+		oci_commit($db_conn);
+	}
+
 	function handleCountRequest()
 	{
 		global $db_conn;
@@ -375,17 +333,8 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	function handleDisplayRequest()
 	{
-		// global $db_conn;
-		// $result = executePlainSQL("SELECT * FROM demoTable");
-		// printResult($result);
-		displayTable("demoTable")
-	}
-
-
-	function displayTable($tableName)
-	{
 		global $db_conn;
-		$result = executePlainSQL("SELECT * FROM "+ $tableName);
+		$result = executePlainSQL("SELECT * FROM demoTable");
 		printResult($result);
 	}
 
@@ -407,7 +356,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 			disconnectFromDB();
 		}
 	}
-
 
 	// HANDLE ALL GET ROUTES
 	// A better coding practice is to have one method that reroutes your requests accordingly. It will make it easier to add/remove functionality.
