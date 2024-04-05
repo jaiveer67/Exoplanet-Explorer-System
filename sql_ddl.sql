@@ -1,24 +1,26 @@
-DROP TABLE Galaxy;
-DROP TABLE Star_BelongsTo;
-DROP TABLE Orbits;
-DROP TABLE Exoplanet_DiscoveredAt;
-DROP TABLE Researcher_WorksAt;
-DROP TABLE DiscoveredBy;
-DROP TABLE SpaceAgency;
-DROP TABLE SpaceProgram;
-DROP TABLE InitiatedBy;
-DROP TABLE Observatory;
-DROP TABLE Mission;
-DROP TABLE Publication;
-DROP TABLE JournalArticle;
-DROP TABLE ConferenceProceeding;
-DROP TABLE BookChapter;
-DROP TABLE WrittenIn;
-DROP TABLE WrittenBy;
-DROP TABLE StellarClass;
-DROP TABLE ExoplanetDimensions;
+DROP TABLE IF EXISTS WrittenIn;
+DROP TABLE IF EXISTS WrittenBy;
+DROP TABLE IF EXISTS BookChapter;
+DROP TABLE IF EXISTS ConferenceProceeding;
+DROP TABLE IF EXISTS JournalArticle;
+DROP TABLE IF EXISTS Publication;
+DROP TABLE IF EXISTS Mission;
+DROP TABLE IF EXISTS Observatory;
+DROP TABLE IF EXISTS InitiatedBy;
+DROP TABLE IF EXISTS SpaceProgram;
+DROP TABLE IF EXISTS DiscoveredBy;
+DROP TABLE IF EXISTS Researcher_WorksAt;
+DROP TABLE IF EXISTS Orbits;
+DROP TABLE IF EXISTS Star_BelongsTo;
+DROP TABLE IF EXISTS Exoplanet_DiscoveredAt;
+DROP TABLE IF EXISTS ExoplanetDimensions;
+DROP TABLE IF EXISTS StellarClass;
+DROP TABLE IF EXISTS SpaceAgency;
+DROP TABLE IF EXISTS Galaxy;
 
--- Create table statementsCREATE TABLE Galaxy(
+
+-- Create table statements
+CREATE TABLE Galaxy(
     Name VARCHAR[200] PRIMARY KEY,
     Age BIGINT,
     Size BIGINT,
@@ -33,10 +35,10 @@ CREATE TABLE Star_BelongsTo (
     StellarClassClass VARCHAR[200],
     FOREIGN KEY (GalaxyName) REFERENCES Galaxy(Name)
         ON DELETE CASCADE
-        ON UPDATE CASCADE,
+        -- ON UPDATE CASCADE,
     FOREIGN KEY (StellarClassClass) REFERENCES StellarClass(Class)
         ON DELETE CASCADE
-        ON UPDATE CASCADE
+        -- ON UPDATE CASCADE
 );
 
 CREATE TABLE Orbits (
@@ -45,26 +47,26 @@ CREATE TABLE Orbits (
     PRIMARY KEY (ExoplanetName, StarName),
     FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(Name)
         ON DELETE CASCADE
-        ON UPDATE CASCADE,
+        -- ON UPDATE CASCADE,
     FOREIGN KEY (StarName) REFERENCES Star_BelongsTo(Name)
         ON DELETE CASCADE
-        ON UPDATE CASCADE
+        -- ON UPDATE CASCADE
 
-    CREATE ASSERTION allStars
-        CHECK
-        (NOT EXISTS(
-            (SELECT StarName FROM Star_BelongsTo)
-            EXCEPT
-            (SELECT StarName FROM Orbits)
-        ))
+    -- CREATE ASSERTION allStars
+    --     CHECK
+    --     (NOT EXISTS(
+    --         (SELECT StarName FROM Star_BelongsTo)
+    --         EXCEPT
+    --         (SELECT StarName FROM Orbits)
+    --     ))
 
-    CREATE ASSERTION allExoplanets
-        CHECK
-        (NOT EXISTS(
-            (SELECT ExoplanetName FROM Exoplanet_DiscoveredAt)
-            EXCEPT
-            (SELECT ExoplanetName FROM Orbits)
-        ))
+    -- CREATE ASSERTION allExoplanets
+    --     CHECK
+    --     (NOT EXISTS(
+    --         (SELECT ExoplanetName FROM Exoplanet_DiscoveredAt)
+    --         EXCEPT
+    --         (SELECT ExoplanetName FROM Orbits)
+    --     ))
 );
 
 CREATE TABLE Exoplanet_DiscoveredAt (
@@ -80,7 +82,7 @@ CREATE TABLE Exoplanet_DiscoveredAt (
     "Discovery Method" VARCHAR[200],
     FOREIGN KEY (SpaceAgencyName) REFERENCES SpaceAgency(Name)
         ON DELETE CASCADE
-        ON UPDATE CASCADE
+        -- ON UPDATE CASCADE
     FOREIGN KEY (Mass, Radius) REFERENCES ExoplanetDimensions(Mass, Radius)
 );
 
@@ -92,7 +94,7 @@ CREATE TABLE Researcher_WorksAt (
    SpaceAgencyName VARCHAR[200],
     FOREIGN KEY (SpaceAgencyName) REFERENCES SpaceAgency(Name)
         ON DELETE CASCADE
-        ON UPDATE CASCADE
+        -- ON UPDATE CASCADE
 );
 
 CREATE TABLE DiscoveredBy (
@@ -101,10 +103,10 @@ CREATE TABLE DiscoveredBy (
     PRIMARY KEY (ResearcherID, ExoplanetName),
     FOREIGN KEY (ResearcherID) REFERENCES Researcher_WorksAt(ID)
         ON DELETE CASCADE
-        ON UPDATE CASCADE,
+        -- ON UPDATE CASCADE,
     FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(Name)
         ON DELETE CASCADE
-        ON UPDATE CASCADE
+        -- ON UPDATE CASCADE
 );
 
 CREATE TABLE SpaceAgency (
@@ -124,26 +126,26 @@ CREATE TABLE InitiatedBy (
     PRIMARY KEY (SpaceAgencyName, SpaceProgramName),
     FOREIGN KEY (SpaceAgencyName) REFERENCES SpaceAgency(Name)
         ON DELETE CASCADE
-        ON UPDATE CASCADE,
+        -- ON UPDATE CASCADE,
     FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name)
         ON DELETE CASCADE
-        ON UPDATE CASCADE
+        -- ON UPDATE CASCADE
 
-    CREATE ASSERTION allSpaceAgencies
-        CHECK
-        (NOT EXISTS(
-            (SELECT SpaceAgencyName FROM SpaceAgency)
-            EXCEPT
-            (SELECT SpaceAgencyName FROM InitiatedBy)
-        ))
+    -- CREATE ASSERTION allSpaceAgencies
+    --     CHECK
+    --     (NOT EXISTS(
+    --         (SELECT SpaceAgencyName FROM SpaceAgency)
+    --         EXCEPT
+    --         (SELECT SpaceAgencyName FROM InitiatedBy)
+    --     ))
 
-    CREATE ASSERTION allSpacePrograms
-        CHECK
-        (NOT EXISTS(
-            (SELECT SpaceProgramName FROM SpaceProgram)
-            EXCEPT
-            (SELECT SpaceProgramName FROM InitiatedBy)
-        ))
+    -- CREATE ASSERTION allSpacePrograms
+    --     CHECK
+    --     (NOT EXISTS(
+    --         (SELECT SpaceProgramName FROM SpaceProgram)
+    --         EXCEPT
+    --         (SELECT SpaceProgramName FROM InitiatedBy)
+    --     ))
 );
 
 CREATE TABLE Observatory (
@@ -151,7 +153,7 @@ CREATE TABLE Observatory (
     Location VARCHAR[200],
     FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name)
         ON DELETE CASCADE
-        ON UPDATE CASCADE
+        -- -- ON UPDATE CASCADE
 );
 
 CREATE TABLE Mission (
@@ -160,7 +162,7 @@ CREATE TABLE Mission (
     Status VARCHAR[200],
     FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name)
         ON DELETE CASCADE
-        ON UPDATE CASCADE
+        -- -- ON UPDATE CASCADE
 );
 
 CREATE TABLE Publication (
@@ -175,7 +177,7 @@ CREATE TABLE JournalArticle (
     DOI VARCHAR[200],
     FOREIGN KEY (PublicationID) REFERENCES Publication(ID)
         ON DELETE CASCADE
-        ON UPDATE CASCADE
+        -- ON UPDATE CASCADE
 );
 
 CREATE TABLE ConferenceProceeding (
@@ -183,7 +185,7 @@ CREATE TABLE ConferenceProceeding (
     Location VARCHAR[200],
     FOREIGN KEY (PublicationID) REFERENCES Publication(ID)
         ON DELETE CASCADE
-        ON UPDATE CASCADE
+        -- ON UPDATE CASCADE
 );
 
 CREATE TABLE BookChapter (
@@ -191,7 +193,7 @@ CREATE TABLE BookChapter (
     BookName VARCHAR[200],
     FOREIGN KEY (PublicationID) REFERENCES Publication(ID)
         ON DELETE CASCADE
-        ON UPDATE CASCADE
+        -- ON UPDATE CASCADE
 );
 
 CREATE TABLE WrittenBy (
@@ -200,38 +202,39 @@ CREATE TABLE WrittenBy (
     PRIMARY KEY (PublicationID, ResearcherID),
     FOREIGN KEY (PublicationID) REFERENCES Publication(ID)
         ON DELETE CASCADE
-        ON UPDATE CASCADE,
+        -- ON UPDATE CASCADE,
     FOREIGN KEY (ResearcherID) REFERENCES Researcher_WorksAt(ID)
         ON DELETE CASCADE
-        ON UPDATE CASCADE
+        -- ON UPDATE CASCADE
 );
 
 CREATE TABLE WrittenIn (
     PublicationID INT,
     ResearcherID VARCHAR[200],
+  	ExoplanetName VARCHAR[200],
     PRIMARY KEY (PublicationID, ExoplanetName),
     FOREIGN KEY (PublicationID) REFERENCES Publication(ID)
         ON DELETE CASCADE
-        ON UPDATE CASCADE,
-    FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(ID)
+        -- ON UPDATE CASCADE,
+    FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(Name)
         ON DELETE CASCADE
-        ON UPDATE CASCADE
+        -- ON UPDATE CASCADE
     
-    CREATE ASSERTION allPublications
-        CHECK
-        (NOT EXISTS(
-            (SELECT PublicationID FROM Publication)
-            EXCEPT
-            (SELECT PublicationID FROM WrittenIn)
-        ))
+    -- CREATE ASSERTION allPublications
+    --     CHECK
+    --     (NOT EXISTS(
+    --         (SELECT PublicationID FROM Publication)
+    --         EXCEPT
+    --         (SELECT PublicationID FROM WrittenIn)
+    --     ))
 
-    CREATE ASSERTION allExoplanets
-        CHECK
-        (NOT EXISTS(
-            (SELECT ExoplanetName FROM Exoplanet_DiscoveredAt)
-            EXCEPT
-            (SELECT ExoplanetName FROM WrittenIn)
-        ))
+    -- CREATE ASSERTION allExoplanets
+    --     CHECK
+    --     (NOT EXISTS(
+    --         (SELECT ExoplanetName FROM Exoplanet_DiscoveredAt)
+    --         EXCEPT
+    --         (SELECT ExoplanetName FROM WrittenIn)
+    --     ))
 );
 
 CREATE TABLE StellarClass (
