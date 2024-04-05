@@ -80,13 +80,18 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	<hr />
 
-	<h2>Update Name in DemoTable</h2>
-	<p>The values are case sensitive and if you enter in the wrong case, the update statement will not do anything.</p>
+	<h2>Update Researcher Information</h2>
+	<p>The values are case sensitive and if you enter in the wrong case, the update statement will not do anything.
+		Leave blank if you want to keep the original value. 
+	</p>
 
 	<form method="POST" action="exoplanet-explorer.php">
 		<input type="hidden" id="updateQueryRequest" name="updateQueryRequest">
-		Old Name: <input type="text" name="oldName"> <br /><br />
-		New Name: <input type="text" name="newName"> <br /><br />
+		ID: <input type="text" name="ID"> <br /><br />
+		Change Name to: <input type="text" name="newName"> <br /><br />
+		Change Affiliation to: <input type="text" name="newAffiliation"> <br /><br />
+		Change EmailAddress to: <input type="text" name="newEmailAddress"> <br /><br />
+		Change SpaceAgencyName to: <input type="text" name="newSpaceAgencyName"> <br /><br />
 
 		<input type="submit" value="Update" name="updateSubmit"></p>
 	</form>
@@ -99,14 +104,14 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		<input type="submit" name="countTuples"></p>
 	</form>
 
-	<hr />
 
-	<h2>Display Tuples in DemoTable</h2>
+	<h2>Display Researcher_WorksAt Table</h2>
 	<form method="GET" action="exoplanet-explorer.php">
 		<input type="hidden" id="displayTuplesRequest" name="displayTuplesRequest">
 		<input type="submit" name="displayTuples"></p>
 	</form>
 
+	<hr />
 
 	<?php
 	// The following code will be parsed as PHP
@@ -228,11 +233,24 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	{
 		global $db_conn;
 
-		$old_name = $_POST['oldName'];
-		$new_name = $_POST['newName'];
+		$ID = $_POST['ID'];
+        $newName = $_POST['newName'];
+        $newAffiliation = $_POST['newAffiliation'];
+        $newEmailAddress = $_POST['newEmailAddress'];
+        $newSpaceAgencyName = $_POST['newSpaceAgencyName'];
 
-		// you need the wrap the old name and new name values with single quotations
-		executePlainSQL("UPDATE demoTable SET name='" . $new_name . "' WHERE name='" . $old_name . "'");
+		if(!is_string($ID) || !is_string($newName) || !is_string($newAffiliation) || !is_string($newEmailAddress) || !is_string($newSpaceAgencyName)) {
+            echo "Error: All fields must be of type string.";
+            return;
+        }
+
+		executePlainSQL("UPDATE Researcher_WorksAt SET 
+		Name = COALESCE('$newName', Name), 
+		Affiliation = COALESCE('$newAffiliation', Affiliation), 
+		EmailAddress = COALESCE('$newEmailAddress', EmailAddress), 
+		SpaceAgencyName = COALESCE('$newSpaceAgencyName', SpaceAgencyName)
+		WHERE ID = '$ID'");
+
 		oci_commit($db_conn);
 	}
 
