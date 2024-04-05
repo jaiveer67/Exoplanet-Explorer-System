@@ -112,10 +112,11 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	<hr />
 
 
-	<h2>Display Researcher_WorksAt Table</h2>
+	<h2>Display a Table</h2>
 	<form method="GET" action="exoplanet-explorer.php">
 		<input type="hidden" id="displayTuplesRequest" name="displayTuplesRequest">
-		<input type="submit" name="displayTuples"></p>
+		TableName: <input type="text" name="tableNameForDisplay"> <br><br>
+		<input type="submit" value="Submit" name="displayTuples"></p>
 	</form>
 
 	<hr />
@@ -203,18 +204,50 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		}
 	}
 
-	function printResult($result)
-	{ //prints results from a select statement
-		echo "<br>Retrieved data from table demoTable:<br>";
-		echo "<table>";
-		echo "<tr><th>ID</th><th>Name</th></tr>";
+	// function printResult($result)
+	// { //prints results from a select statement
+	// 	echo "<br>Retrieved data from table demoTable:<br>";
+	// 	echo "<table>";
+	// 	echo "<tr><th>ID</th><th>Name</th></tr>";
 
-		while ($row = OCI_Fetch_Array($result, OCI_ASSOC)) {
-			echo "<tr><td>" . $row["ID"] . "</td><td>" . $row["NAME"] . "</td></tr>"; //or just use "echo $row[0]"
+	// 	while ($row = OCI_Fetch_Array($result, OCI_ASSOC)) {
+	// 		echo "<tr><td>" . $row["ID"] . "</td><td>" . $row["NAME"] . "</td></tr>"; //or just use "echo $row[0]"
+	// 	}
+
+	// 	echo "</table>";
+	// }
+
+	function printResult($result) {
+		// Check if there are rows to display
+		if (!oci_fetch($result)) {
+			echo "<p>No data found.</p>";
+			return;
 		}
-
+	
+		// Move back to the first row of the result set
+		oci_execute($result, OCI_DEFAULT);
+	
+		// Start table and add header row for column names
+		echo "<table border='1'>";
+		$ncols = oci_num_fields($result);
+		echo "<tr>";
+		for ($i = 1; $i <= $ncols; $i++) {
+			$colName = oci_field_name($result, $i);
+			echo "<th>" . htmlspecialchars($colName) . "</th>";
+		}
+		echo "</tr>";
+	
+		// Add data rows
+		while ($row = oci_fetch_assoc($result)) {
+			echo "<tr>";
+			foreach ($row as $item) {
+				echo "<td>" . htmlspecialchars($item) . "</td>";
+			}
+			echo "</tr>";
+		}
 		echo "</table>";
 	}
+	
 
 	function connectToDB()
 	{
@@ -386,7 +419,7 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		// global $db_conn;
 		// $result = executePlainSQL("SELECT * FROM demoTable");
 		// printResult($result);
-		displayTable("demoTable");
+		displayTable($_GET["tableNameForDisplay"]);
 	}
 
 	function handleProjectionRequest()
