@@ -280,10 +280,28 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	<hr />
 
 	</form>
-    <h2>Number of missions for each Space Program (GROUP BY)</h2>
+    <h2>Number of Missions for each Space Program (GROUP BY)</h2>
     <form method="GET" action="exoplanet-explorer.php">
         <input type="hidden" id="groupTuplesRequest" name="groupTuplesRequest">
         <input type="submit" name="groupTuples" id="button"></p>
+    </form>
+
+	<hr />
+
+	</form>
+    <h2>Number of Stellar Classes having more than 2 stars (HAVING)</h2>
+    <form method="GET" action="exoplanet-explorer.php">
+        <input type="hidden" id="havingTuplesRequest" name="havingTuplesRequest">
+        <input type="submit" name="havingTuples" id="button"></p>
+    </form>
+
+	<hr />
+	
+	</form>
+	<h2>Division Query</h2>
+    <form method="GET" action="exoplanet-explorer.php">
+        <input type="hidden" id="divisionTuplesRequest" name="divisionTuplesRequest">
+        <input type="submit" name="divisionTuples" id="button"></p>
     </form>
 
 	<hr />
@@ -698,6 +716,29 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
         //print result
 	}
 
+	function handleHavingRequest()
+	{
+		global $db_conn;
+        $result = executePlainSQL("SELECT sc.Class, COUNT(*) AS NumStars
+		FROM StellarClass sc
+		JOIN Star_BelongsTo sb ON sc.Class = sb.StellarClassClass
+		GROUP BY sc.Class
+		HAVING COUNT(*) > 2");
+        printGroupResult($result);
+	}
+
+	function handleDivisionRequest()
+	{
+		global $db_conn;
+        $result = executePlainSQL("SELECT sc.Class, COUNT(*) AS NumStars
+		FROM StellarClass sc
+		JOIN Star_BelongsTo sb ON sc.Class = sb.StellarClassClass
+		GROUP BY sc.Class
+		HAVING COUNT(*) > 2");
+        printGroupResult($result);
+	}
+	
+
 	function displayTable($tableName)
 	{
 		// global $db_conn;
@@ -722,7 +763,7 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 				handleSelectRequest();
 			} else if (array_key_exists('joinQueryRequest', $_POST)) {
 				handleJoinRequest();
-			}
+			} 
 			disconnectFromDB();
 		}
 	}
@@ -740,6 +781,10 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 				handleProjectionRequest();
 			} elseif (array_key_exists('groupTuples', $_GET)){
 				handleGroupRequest();
+			} elseif (array_key_exists('havingTuples', $_GET)){
+				handleHavingRequest();
+			} elseif (array_key_exists('divisonTuples', $_GET)){
+				handleDivisionRequest();
 			}
 			disconnectFromDB();
 		}
