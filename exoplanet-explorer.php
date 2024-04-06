@@ -107,144 +107,12 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	<hr />
 
-	<h2>Select from Exoplanet_DiscoveredAt WHERE</h2>
+	<h2>Select from Exoplanet_DiscoveredAt</h2>
 	</p>
 
-	<form method="POST" action="exoplanet-explorer.php">
+	<form method="GET" action="exoplanet-explorer.php">
 		<input type="hidden" id="selectQueryRequest" name="selectQueryRequest">
-        Name: 
-    <select name="NameOperator">
-        <option value="=">=</option>
-    </select>
-    <input type="text" name="Name"> <br><br>
-	<select name="NameLogicalOperator">
-		<option value=""></option>
-        <option value="AND">AND</option>
-        <option value="OR">OR</option>
-    </select><br><br>
-    Type: 
-    <select name="TypeOperator">
-        <option value="=">=</option>
-    </select>
-    <input type="text" name="Type"> <br><br>
-	<select name="SelectLogicalOperator
-	">
-		<option value=""></option>
-        <option value="AND">AND</option>
-        <option value="OR">OR</option>
-    </select><br><br>
-    Mass: 
-    <select name="MassOperator">
-        <option value="=">=</option>
-        <option value="<">&lt;</option>
-        <option value="<=">&le;</option>
-        <option value=">">&gt;</option>
-        <option value=">=">&ge;</option>
-    </select>
-    <input type="text" name="Mass"> <br><br>
-	<select name="SelectLogicalOperator
-	">
-		<option value=""></option>
-        <option value="AND">AND</option>
-        <option value="OR">OR</option>
-    </select><br><br>
-    Radius: 
-    <select name="RadiusOperator">
-        <option value="=">=</option>
-        <option value="<">&lt;</option>
-        <option value="<=">&le;</option>
-        <option value=">">&gt;</option>
-        <option value=">=">&ge;</option>
-    </select>
-    <input type="text" name="Radius"> <br><br>
-	<select name="SelectLogicalOperator
-	">
-		<option value=""></option>
-        <option value="AND">AND</option>
-        <option value="OR">OR</option>
-    </select><br><br>
-    Discovery Year: 
-    <select name="DiscoveryYearOperator">
-        <option value="=">=</option>
-        <option value="<">&lt;</option>
-        <option value="<=">&le;</option>
-        <option value=">">&gt;</option>
-        <option value=">=">&ge;</option>
-    </select>
-    <input type="text" name="DiscoveryYear"> <br><br>
-	<select name="SelectLogicalOperator
-	">
-		<option value=""></option>
-        <option value="AND">AND</option>
-        <option value="OR">OR</option>
-    </select><br><br>
-    Light Years From Earth: 
-    <select name="LightYearsFromEarthOperator">
-        <option value="=">=</option>
-        <option value="<">&lt;</option>
-        <option value="<=">&le;</option>
-        <option value=">">&gt;</option>
-        <option value=">=">&ge;</option>
-    </select>
-    <input type="text" name="LightYearsFromEarth"> <br><br>
-	<select name="SelectLogicalOperator
-	">
-		<option value=""></option>
-        <option value="AND">AND</option>
-        <option value="OR">OR</option>
-    </select><br><br>
-    Orbital Period: 
-    <select name="OrbitalPeriodOperator">
-        <option value="=">=</option>
-        <option value="<">&lt;</option>
-        <option value="<=">&le;</option>
-        <option value=">">&gt;</option>
-        <option value=">=">&ge;</option>
-    </select>
-    <input type="text" name="OrbitalPeriod"> <br><br>
-	<select name="SelectLogicalOperator
-	">
-		<option value=""></option>
-        <option value="AND">AND</option>
-        <option value="OR">OR</option>
-    </select><br><br>
-    Eccentricity: 
-    <select name="EccentricityOperator">
-        <option value="=">=</option>
-        <option value="<">&lt;</option>
-        <option value="<=">&le;</option>
-        <option value=">">&gt;</option>
-        <option value=">=">&ge;</option>
-    </select>
-    <input type="text" name="Eccentricity"> <br><br>
-	<select name="SelectLogicalOperator
-	">
-		<option value=""></option>
-        <option value="AND">AND</option>
-        <option value="OR">OR</option>
-    </select><br><br>
-    SpaceAgency Name: 
-    <select name="SpaceAgencyNameOperator">
-        <option value="=">=</option>
-    </select>
-    <input type="text" name="SpaceAgencyName"> <br><br>
-	<select name="SelectLogicalOperator
-	">
-		<option value=""></option>
-        <option value="AND">AND</option>
-        <option value="OR">OR</option>
-    </select><br><br>
-    Discovery Method: 
-    <select name="DiscoveryMethodOperator">
-        <option value="=">=</option>
-    </select>
-    <input type="text" name="DiscoveryMethod"> <br><br>
-	<select name="SelectLogicalOperator
-	">
-		<option value=""></option>
-        <option value="AND">AND</option>
-        <option value="OR">OR</option>
-    </select><br><br>
+        WHERE: <input type="text" name="Where"> <br><br>
 
 		<input type="submit" value="Submit" name="selectQuerySubmit"></p>
 	</form>
@@ -413,23 +281,22 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	
 		// Start table and add header row for column names
 		echo "<table border='1'>";
-		$ncols = oci_num_fields($result);
-		echo "<tr>";
-		for ($i = 1; $i <= $ncols; $i++) {
-			$colName = oci_field_name($result, $i);
-			echo "<th>" . htmlspecialchars($colName) . "</th>";
-		}
-		echo "</tr>";
-	
-		// Add data rows
-		while ($row = oci_fetch_assoc($result)) {
-			echo "<tr>";
-			foreach ($row as $item) {
-				echo "<td>" . htmlspecialchars($item) . "</td>";
-			}
-			echo "</tr>";
-		}
-		echo "</table>";
+    $ncols = oci_num_fields($result);
+    echo "<tr>";
+    for ($i = 1; $i <= $ncols; $i++) {
+        $colName = oci_field_name($result, $i);
+        echo "<th>" . htmlspecialchars($colName ?? '', ENT_QUOTES, 'UTF-8') . "</th>";
+    }
+    echo "</tr>";
+
+    while ($row = oci_fetch_assoc($result)) {
+        echo "<tr>";
+        foreach ($row as $item) {
+            echo "<td>" . htmlspecialchars($item ?? '', ENT_QUOTES, 'UTF-8') . "</td>";
+        }
+        echo "</tr>";
+    }
+    echo "</table>";
 	}
 	
 
@@ -540,40 +407,78 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	}
 
-	function handleInsertRequest()
-	{
+	function handleInsertRequest() {
 		global $db_conn;
-
-		//Getting the values from user and insert data into the table
-		$tuple = array(
-			":bind1" => $_POST['insName'],
-			":bind2" => $_POST['insType'],
-			":bind3" => $_POST['insMass'],
-			":bind4" => $_POST['insRadius'],
-			":bind5" => $_POST['insYear'],
-			":bind6" => $_POST['insLight'],
-			":bind7" => $_POST['insOrb'],
-			":bind8" => $_POST['insEcc'],
-			":bind9" => $_POST['insSpace'],
-			":bind10" => $_POST['insDisc']
-		);
-
-		$alltuples = array(
-			$tuple
-		);
-		
-		$checkSpaceAgencyExists = executeBoundSQL("SELECT Name FROM SpaceAgency WHERE Name = :bind9");
-		if (!oci_fetch($checkSpaceAgencyExists)) { //checking if returned result is empty
-			executeBoundSQL("INSERT INTO SpaceAgency(Name) VALUES (:bind9)");
+	
+		// Extract POST data
+		$name = $_POST['insName'];
+		$type = $_POST['insType'];
+		$mass = $_POST['insMass'];
+		$radius = $_POST['insRadius'];
+		$discoveryYear = $_POST['insYear'];
+		$lightYears = $_POST['insLight'];
+		$orbitalPeriod = $_POST['insOrb'];
+		$eccentricity = $_POST['insEcc'];
+		$spaceAgencyName = $_POST['insSpace'];
+		$discoveryMethod = $_POST['insDisc'];
+	
+		// Check if the Exoplanet name already exists
+		$queryExoplanet = "SELECT Name FROM Exoplanet_DiscoveredAt WHERE Name = :name";
+		$stmtCheckExoplanet = oci_parse($db_conn, $queryExoplanet);
+		oci_bind_by_name($stmtCheckExoplanet, ':name', $name);
+		oci_execute($stmtCheckExoplanet);
+	
+		if (oci_fetch($stmtCheckExoplanet)) {
+			echo "<p>Error: An exoplanet with the name '{$name}' already exists.</p>";
+			return; // Stop the function execution if the exoplanet name exists
 		}
-
-		$checkDimensionsExist = executeBoundSQL("SELECT (Mass, Radius) FROM ExoplanetDimensions WHERE Mass = :bind3 AND Radius = :bind4");
-		if (!oci_fetch($checkDimensionsExist)) { //checking if returned result is empty
-			executeBoundSQL("INSERT INTO ExoplanetDimensions (Mass, Radius) VALUES (:bind3, :bind4)");
+	
+		// Ensure the SpaceAgency exists or insert it
+		$querySpaceAgency = "SELECT Name FROM SpaceAgency WHERE Name = :spaceAgencyName";
+		$stmt = oci_parse($db_conn, $querySpaceAgency);
+		oci_bind_by_name($stmt, ':spaceAgencyName', $spaceAgencyName);
+		oci_execute($stmt);
+	
+		if (!oci_fetch($stmt)) { // If SpaceAgency does not exist, insert it
+			$insertSpaceAgency = "INSERT INTO SpaceAgency(Name) VALUES (:spaceAgencyName)";
+			$stmtInsertAgency = oci_parse($db_conn, $insertSpaceAgency);
+			oci_bind_by_name($stmtInsertAgency, ':spaceAgencyName', $spaceAgencyName);
+			oci_execute($stmtInsertAgency);
 		}
-
-		executeBoundSQL("INSERT INTO Exoplanet_DiscoveredAt VALUES (:bind1, :bind2, :bind3, :bind4, :bind5, :bind6, :bind7, :bind8, :bind9, :bind10)", $alltuples);
+	
+		// Ensure the ExoplanetDimensions exists or insert it
+		$queryDimensions = "SELECT * FROM ExoplanetDimensions WHERE Mass = :mass AND Radius = :radius";
+		$stmtDimensions = oci_parse($db_conn, $queryDimensions);
+		oci_bind_by_name($stmtDimensions, ':mass', $mass);
+		oci_bind_by_name($stmtDimensions, ':radius', $radius);
+		oci_execute($stmtDimensions);
+	
+		if (!oci_fetch($stmtDimensions)) { // If ExoplanetDimensions does not exist, insert it
+			$insertDimensions = "INSERT INTO ExoplanetDimensions(Mass, Radius) VALUES (:mass, :radius)";
+			$stmtInsertDimensions = oci_parse($db_conn, $insertDimensions);
+			oci_bind_by_name($stmtInsertDimensions, ':mass', $mass);
+			oci_bind_by_name($stmtInsertDimensions, ':radius', $radius);
+			oci_execute($stmtInsertDimensions);
+		}
+	
+		// Insert the Exoplanet
+		$insertExoplanet = "INSERT INTO Exoplanet_DiscoveredAt(Name, Type, Mass, Radius, \"Discovery Year\", \"Light Years from Earth\", \"Orbital Period\", Eccentricity, SpaceAgencyName, \"Discovery Method\") 
+							 VALUES (:name, :type, :mass, :radius, :discoveryYear, :lightYears, :orbitalPeriod, :eccentricity, :spaceAgencyName, :discoveryMethod)";
+		$stmtExoplanet = oci_parse($db_conn, $insertExoplanet);
+		oci_bind_by_name($stmtExoplanet, ':name', $name);
+		oci_bind_by_name($stmtExoplanet, ':type', $type);
+		oci_bind_by_name($stmtExoplanet, ':mass', $mass);
+		oci_bind_by_name($stmtExoplanet, ':radius', $radius);
+		oci_bind_by_name($stmtExoplanet, ':discoveryYear', $discoveryYear);
+		oci_bind_by_name($stmtExoplanet, ':lightYears', $lightYears);
+		oci_bind_by_name($stmtExoplanet, ':orbitalPeriod', $orbitalPeriod);
+		oci_bind_by_name($stmtExoplanet, ':eccentricity', $eccentricity);
+		oci_bind_by_name($stmtExoplanet, ':spaceAgencyName', $spaceAgencyName);
+		oci_bind_by_name($stmtExoplanet, ':discoveryMethod', $discoveryMethod);
+		oci_execute($stmtExoplanet);
+	
 		oci_commit($db_conn);
+		echo "<p>Exoplanet '{$name}' successfully inserted.</p>";
 	}
 
 	function handleDeleteRequest()
@@ -592,44 +497,16 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	{
 		global $db_conn;
 
-			$whereClause = "";
-			$logicalOperator = "";
-	
-			$fields = array(
-				"Name" => array("Operator" => $_POST["NameOperator"], "Value" => $_POST["Name"]),
-				"Type" => array("Operator" => $_POST["TypeOperator"], "Value" => $_POST["Type"]),
-				"Mass" => array("Operator" => $_POST["MassOperator"], "Value" => $_POST["Mass"]),
-				"Radius" => array("Operator" => $_POST["RadiusOperator"], "Value" => $_POST["Radius"]),
-				"DiscoveryYear" => array("Operator" => $_POST["DiscoveryYearperator"], "Value" => $_POST["DiscoveryYear"]),
-				"LightYearsFromEarth" => array("Operator" => $_POST["LightYearsFromEarthOperator"], "Value" => $_POST["LightYearsFromEarth"]),
-				"OrbitalPeriod" => array("Operator" => $_POST["OrbitalPeriodOperator"], "Value" => $_POST["OrbitalPeriod"]),
-				"Eccentricity" => array("Operator" => $_POST["EccentricityOperator"], "Value" => $_POST["Eccentricity"]),
-				"SpaceAgencyName" => array("Operator" => $_POST["SpaceAgencyNameOperator"], "Value" => $_POST["SpaceAgencyName"]),
-				"DiscoveryMethod" => array("Operator" => $_POST["DiscoveryMethodOperator"], "Value" => $_POST["DiscoveryMethod"]),
-			);
-	
-			foreach ($fields as $field => $options) {
-				$operator = $options["Operator"];
-				$value = $options["Value"];
-	
-				if (!empty($value)) {
-					if (!empty($whereClause)) {
-						$whereClause .= $logicalOperator;
-					}
-					$whereClause .= "$field $operator '$value'";
-					$logicalOperator = $_POST[$field . "LogicalOperator"];
-				}
-			}
-	
-			$query = "SELECT * FROM Exoplanet_DiscoveredAt";
-			if (!empty($whereClause)) {
-				$query .= " WHERE $whereClause";
-			}
-	
-			$result = executePlainSQL($query);
+		$whereClause = $_GET['Where'];
+		$SelectRequest = "SELECT * FROM Exoplanet_DiscoveredAt";
 
+		if (!empty($whereClause)) {
+			$SelectRequest .= " WHERE " . $whereClause;
+		}
+
+		$result = executePlainSQL($SelectRequest);
 		oci_commit($db_conn);
-		displayTable
+		printResult($result);
 	}
 
 	function handleJoinRequest()
@@ -735,8 +612,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 				handleInsertRequest();
 			} else if (array_key_exists('deleteQueryRequest', $_POST)) {
 				handleDeleteRequest();
-			} else if (array_key_exists('selectQueryRequest', $_POST)) {
-				handleSelectRequest();
 			} else if (array_key_exists('joinQueryRequest', $_POST)) {
 				handleJoinRequest();
 			} 
@@ -761,7 +636,9 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 				handleHavingRequest();
 			} elseif (array_key_exists('divisonTuples', $_GET)){
 				handleDivisionRequest();
-			}
+			} else if (array_key_exists('selectQueryRequest', $_GET)) {
+				handleSelectRequest();
+			} 
 
 			disconnectFromDB();
 		}
@@ -769,7 +646,8 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	if (isset($_POST['reset']) || isset($_POST['updateSubmit']) || isset($_POST['insertSubmit']) || isset($_POST['deleteSubmit'])) {
 		handlePOSTRequest();
-	} else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest'])) {
+	} else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || 
+	isset($_GET['selectQuerySubmit'])) {
 		handleGETRequest();
 	}
 
