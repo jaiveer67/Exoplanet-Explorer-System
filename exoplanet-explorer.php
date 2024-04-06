@@ -687,6 +687,7 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 			$result = executePlainSQL($query);
 
 		oci_commit($db_conn);
+		displayTable
 	}
 
 	function handleJoinRequest()
