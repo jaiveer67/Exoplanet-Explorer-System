@@ -281,24 +281,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	
 		// Start table and add header row for column names
 		echo "<table border='1'>";
-<<<<<<< HEAD
-    $ncols = oci_num_fields($result);
-    echo "<tr>";
-    for ($i = 1; $i <= $ncols; $i++) {
-        $colName = oci_field_name($result, $i);
-        echo "<th>" . htmlspecialchars($colName ?? '', ENT_QUOTES, 'UTF-8') . "</th>";
-    }
-    echo "</tr>";
-
-    while ($row = oci_fetch_assoc($result)) {
-        echo "<tr>";
-        foreach ($row as $item) {
-            echo "<td>" . htmlspecialchars($item ?? '', ENT_QUOTES, 'UTF-8') . "</td>";
-        }
-        echo "</tr>";
-    }
-    echo "</table>";
-=======
 		$ncols = oci_num_fields($result);
 		echo "<tr>";
 		for ($i = 1; $i <= $ncols; $i++) {
@@ -318,7 +300,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		echo "</table>";
 
 		print("Success!");
->>>>>>> 30182feed50e609a504137d452250b2237cb64c5
 	}
 	
 
@@ -525,7 +506,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		if (!empty($whereClause)) {
 			$SelectRequest .= " WHERE " . $whereClause;
 		}
-
 		$result = executePlainSQL($SelectRequest);
 		oci_commit($db_conn);
 		printResult($result);
@@ -635,15 +615,9 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 				handleInsertRequest();
 			} else if (array_key_exists('deleteQueryRequest', $_POST)) {
 				handleDeleteRequest();
-<<<<<<< HEAD
-			} else if (array_key_exists('joinQueryRequest', $_POST)) {
-				handleJoinRequest();
-			} 
-=======
 			} else if (array_key_exists('selectQueryRequest', $_POST)) {
 				handleSelectRequest();
 			}
->>>>>>> 30182feed50e609a504137d452250b2237cb64c5
 			disconnectFromDB();
 		}
 	}
@@ -665,13 +639,10 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 				handleHavingRequest();
 			} elseif (array_key_exists('divisonTuples', $_GET)){
 				handleDivisionRequest();
-<<<<<<< HEAD
 			} else if (array_key_exists('selectQueryRequest', $_GET)) {
 				handleSelectRequest();
-=======
 			}  else if (array_key_exists('joinQueryRequest', $_GET)) {
 				handleJoinRequest();
->>>>>>> 30182feed50e609a504137d452250b2237cb64c5
 			} 
 
 			disconnectFromDB();
@@ -680,12 +651,8 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	if (isset($_POST['reset']) || isset($_POST['updateSubmit']) || isset($_POST['insertSubmit']) || isset($_POST['deleteSubmit']) ) {
 		handlePOSTRequest();
-<<<<<<< HEAD
-	} else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || 
-	isset($_GET['selectQuerySubmit'])) {
-=======
-	} else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || isset($_GET['joinSubmit']) ) {
->>>>>>> 30182feed50e609a504137d452250b2237cb64c5
+	} else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || isset($_GET['joinSubmit']) 
+	|| isset($_GET['selectQuerySubmit'])) {
 		handleGETRequest();
 	}
 
