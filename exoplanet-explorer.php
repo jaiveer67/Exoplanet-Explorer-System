@@ -252,11 +252,11 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	<hr />
 
 	<h2>Join Star_BelongsTo and StellarClass</h2>
-	<form method="POST" action="exoplanet-explorer.php">
+	<form method="GET" action="exoplanet-explorer.php">
 		<input type="hidden" id="joinQueryRequest" name="joinQueryRequest">
-		StellarClass Class: <input type="text" name="StellarClassClass"><br><br>
+		StellarClass for FILTERING: <input type="text" name="StellarClassClass"><br><br>
 
-		<input type="submit" value="Submit" name="joinSubmit"></p>
+		<input type="submit" value="Join" name="joinSubmit"></p>
 	</form>
 
 	<hr />
@@ -635,16 +635,17 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	{
 		global $db_conn;
 
-		$stellarClass = $_POST['StellarClassClass'];
+		$stellarClass = $_GET['StellarClassClass'];
 
 		if (!empty($stellarClass)) {
-            $whereClause = "WHERE StellarClassClass = '$stellarClass'";
+            $whereClause = "WHERE Star_BelongsTo.StellarClassClass = StellarClass.Class AND Star_BelongsTo.StellarClassClass = '" . $stellarClass . "'";
         } else {
             $whereClause = "";
         }
 
-		$result = executePlainSQL("SELECT * FROM Star_BelongsTo NATURAL JOIN StellarClass $whereClause");
-
+		$result = executePlainSQL("SELECT * FROM Star_BelongsTo, StellarClass " . $whereClause);
+		printResult($result);
+		// print("hello");
 		oci_commit($db_conn);
 	}
 
@@ -736,9 +737,7 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 				handleDeleteRequest();
 			} else if (array_key_exists('selectQueryRequest', $_POST)) {
 				handleSelectRequest();
-			} else if (array_key_exists('joinQueryRequest', $_POST)) {
-				handleJoinRequest();
-			} 
+			}
 			disconnectFromDB();
 		}
 	}
@@ -760,15 +759,17 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 				handleHavingRequest();
 			} elseif (array_key_exists('divisonTuples', $_GET)){
 				handleDivisionRequest();
-			}
+			}  else if (array_key_exists('joinQueryRequest', $_GET)) {
+				handleJoinRequest();
+			} 
 
 			disconnectFromDB();
 		}
 	}
 
-	if (isset($_POST['reset']) || isset($_POST['updateSubmit']) || isset($_POST['insertSubmit']) || isset($_POST['deleteSubmit'])) {
+	if (isset($_POST['reset']) || isset($_POST['updateSubmit']) || isset($_POST['insertSubmit']) || isset($_POST['deleteSubmit']) ) {
 		handlePOSTRequest();
-	} else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest'])) {
+	} else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || isset($_GET['joinSubmit']) ) {
 		handleGETRequest();
 	}
 
