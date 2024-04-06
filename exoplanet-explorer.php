@@ -272,10 +272,18 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	<h2>Projection Query</h2>
 	<form method="GET" action="exoplanet-explorer.php">
-    <p>Table Name: <input type="text" name="tableName" required></p>
-    <p>Attributes (comma-separated): <input type="text" name="attributes" required></p>
-    <p><input type="submit" value="Project" name="projectionSubmit"></p>
+		<input type="hidden" id="projectionRequest" name="projectionRequest">
+		TableName: <input type="text" name="tableNameForDisplay" required> <br><br>
+		Attributes (comma-separated): <input type="text" name="attributes" required> <br><br>
+		<input type="submit" value="Project" name="projectionSubmit"></p>
 	</form>
+
+	<!-- <h2>Projection Query</h2>
+	<form method="GET" action="exoplanet-explorer.php">
+    	Table Name: <input type="text" name="tableName" required>
+    	Attributes (comma-separated): <input type="text" name="attributes" required>
+    	<input type="submit" value="Project" name="projectionSubmit"></p>
+	</form> -->
 
 	<hr />
 
@@ -721,7 +729,7 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	{
 		// global $db_conn;
 		$attributes = $_GET['attributes'];
-		$tableName = $_GET['tableName'];
+		$tableName = $_GET['tableNameForDisplay'];
 
 		$query = "SELECT DISTINCT " . $attributes . " FROM " . $tableName;
 
@@ -779,7 +787,7 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	if (isset($_POST['reset']) || isset($_POST['updateSubmit']) || isset($_POST['insertSubmit'])) {
 		handlePOSTRequest();
-	} else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest'])) {
+	} else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest'])) {
 		handleGETRequest();
 	}
 
