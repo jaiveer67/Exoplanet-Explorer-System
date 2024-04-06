@@ -50,3 +50,6 @@ Researchers, astronomers, and enthusiasts will be able to:
 - **Database Management System (DBMS)**: Oracle SQL for robust, scalable data storage and retrieval.
 - **Backend**: PHP, chosen for its strong database connectivity capabilities.
 - **Frontend**: HTML and CSS for developing a user-friendly interface. (Note: The frontend development is ongoing and subject to evolve with project requirements.)
+
+## Front End
+The interface utilizes PHP and Oracle to offer a seamless user experience, enabling users to interact with tables, view newly added exoplanet examples, remove space agencies, modify researcher details, and access various insightful outcomes—all without the need to input any SQL code directly. This responsive website bridges the gap between back-end and front-end operations, ensuring that relevant information is refreshed with each action while delivering immediate feedback on successful transactions and new entries.
