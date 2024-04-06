@@ -281,26 +281,22 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	
 		// Start table and add header row for column names
 		echo "<table border='1'>";
+    $ncols = oci_num_fields($result);
+    echo "<tr>";
+    for ($i = 1; $i <= $ncols; $i++) {
+        $colName = oci_field_name($result, $i);
+        echo "<th>" . htmlspecialchars($colName ?? '', ENT_QUOTES, 'UTF-8') . "</th>";
+    }
+    echo "</tr>";
 
-		$ncols = oci_num_fields($result);
-		echo "<tr>";
-		for ($i = 1; $i <= $ncols; $i++) {
-			$colName = oci_field_name($result, $i);
-			echo "<th>" . htmlspecialchars($colName) . "</th>";
-		}
-		echo "</tr>";
-	
-		// Add data rows
-		while ($row = oci_fetch_assoc($result)) {
-			echo "<tr>";
-			foreach ($row as $item) {
-				echo "<td>" . htmlspecialchars($item) . "</td>";
-			}
-			echo "</tr>";
-		}
-		echo "</table>";
-
-// 		print("Success!");
+    while ($row = oci_fetch_assoc($result)) {
+        echo "<tr>";
+        foreach ($row as $item) {
+            echo "<td>" . htmlspecialchars($item ?? '', ENT_QUOTES, 'UTF-8') . "</td>";
+        }
+        echo "</tr>";
+    }
+    echo "</table>";
 	}
 	
 
