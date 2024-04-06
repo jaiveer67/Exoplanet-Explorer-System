@@ -120,11 +120,11 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	<hr />
 
 	<h2>Join Star_BelongsTo and StellarClass</h2>
-	<form method="POST" action="exoplanet-explorer.php">
+	<form method="GET" action="exoplanet-explorer.php">
 		<input type="hidden" id="joinQueryRequest" name="joinQueryRequest">
-		StellarClass Class: <input type="text" name="StellarClassClass"><br><br>
+		StellarClass for FILTERING: <input type="text" name="StellarClassClass"><br><br>
 
-		<input type="submit" value="Submit" name="joinSubmit"></p>
+		<input type="submit" value="Join" name="joinSubmit"></p>
 	</form>
 
 	<hr />
@@ -281,6 +281,7 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	
 		// Start table and add header row for column names
 		echo "<table border='1'>";
+<<<<<<< HEAD
     $ncols = oci_num_fields($result);
     echo "<tr>";
     for ($i = 1; $i <= $ncols; $i++) {
@@ -297,6 +298,27 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
         echo "</tr>";
     }
     echo "</table>";
+=======
+		$ncols = oci_num_fields($result);
+		echo "<tr>";
+		for ($i = 1; $i <= $ncols; $i++) {
+			$colName = oci_field_name($result, $i);
+			echo "<th>" . htmlspecialchars($colName) . "</th>";
+		}
+		echo "</tr>";
+	
+		// Add data rows
+		while ($row = oci_fetch_assoc($result)) {
+			echo "<tr>";
+			foreach ($row as $item) {
+				echo "<td>" . htmlspecialchars($item) . "</td>";
+			}
+			echo "</tr>";
+		}
+		echo "</table>";
+
+		print("Success!");
+>>>>>>> 30182feed50e609a504137d452250b2237cb64c5
 	}
 	
 
@@ -513,16 +535,17 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	{
 		global $db_conn;
 
-		$stellarClass = $_POST['StellarClassClass'];
+		$stellarClass = $_GET['StellarClassClass'];
 
 		if (!empty($stellarClass)) {
-            $whereClause = "WHERE StellarClassClass = '$stellarClass'";
+            $whereClause = "WHERE Star_BelongsTo.StellarClassClass = StellarClass.Class AND Star_BelongsTo.StellarClassClass = '" . $stellarClass . "'";
         } else {
             $whereClause = "";
         }
 
-		$result = executePlainSQL("SELECT * FROM Star_BelongsTo NATURAL JOIN StellarClass $whereClause");
-
+		$result = executePlainSQL("SELECT * FROM Star_BelongsTo, StellarClass " . $whereClause);
+		printResult($result);
+		// print("hello");
 		oci_commit($db_conn);
 	}
 
@@ -612,9 +635,15 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 				handleInsertRequest();
 			} else if (array_key_exists('deleteQueryRequest', $_POST)) {
 				handleDeleteRequest();
+<<<<<<< HEAD
 			} else if (array_key_exists('joinQueryRequest', $_POST)) {
 				handleJoinRequest();
 			} 
+=======
+			} else if (array_key_exists('selectQueryRequest', $_POST)) {
+				handleSelectRequest();
+			}
+>>>>>>> 30182feed50e609a504137d452250b2237cb64c5
 			disconnectFromDB();
 		}
 	}
@@ -636,18 +665,27 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 				handleHavingRequest();
 			} elseif (array_key_exists('divisonTuples', $_GET)){
 				handleDivisionRequest();
+<<<<<<< HEAD
 			} else if (array_key_exists('selectQueryRequest', $_GET)) {
 				handleSelectRequest();
+=======
+			}  else if (array_key_exists('joinQueryRequest', $_GET)) {
+				handleJoinRequest();
+>>>>>>> 30182feed50e609a504137d452250b2237cb64c5
 			} 
 
 			disconnectFromDB();
 		}
 	}
 
-	if (isset($_POST['reset']) || isset($_POST['updateSubmit']) || isset($_POST['insertSubmit']) || isset($_POST['deleteSubmit'])) {
+	if (isset($_POST['reset']) || isset($_POST['updateSubmit']) || isset($_POST['insertSubmit']) || isset($_POST['deleteSubmit']) ) {
 		handlePOSTRequest();
+<<<<<<< HEAD
 	} else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || 
 	isset($_GET['selectQuerySubmit'])) {
+=======
+	} else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || isset($_GET['joinSubmit']) ) {
+>>>>>>> 30182feed50e609a504137d452250b2237cb64c5
 		handleGETRequest();
 	}
 
