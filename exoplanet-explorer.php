@@ -257,16 +257,13 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	// }
 
 	function printResult($result) {
-		// Check if there are rows to display
 		if (!oci_fetch($result)) {
 			echo "<p>No data found.</p>";
 			return;
 		}
 	
-		// Move back to the first row of the result set
 		oci_execute($result, OCI_DEFAULT);
 	
-		// Start table and add header row for column names
 		echo "<table border='1'>";
     $ncols = oci_num_fields($result);
     echo "<tr>";
@@ -343,32 +340,29 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	function executeFromFile($filename) {
 		global $success;
-		$success = True; // Assume success unless an error occurs
+		$success = True; 
 	
-		// Check if the file exists
 		if (!file_exists($filename)) {
 			echo "File not found: $filename<br>";
 			return false;
 		}
 	
-		// Read the SQL file
 		$sql = file_get_contents($filename);
 		if ($sql === false) {
 			echo "Unable to read the file: $filename<br>";
 			return false;
 		}
 
-		// Split the SQL file into individual SQL statements
 		$statements = explode(';', $sql);
 		foreach ($statements as $statement) {
 			$statement = trim($statement);
-			// Skip empty statements (which could appear due to the explode if there's a trailing semicolon)
+
 			if (!empty($statement)) {
 				executePlainSQL($statement);
-				// Check the global success flag to see if the execution was successful
+				
 				if (!$success) {
 					echo "An error occurred executing the statement: $statement<br>";
-					// If one statement fails, you might decide to stop execution or continue; this example stops
+					
 					return false;
 				}
 			}
@@ -379,13 +373,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	function handleResetRequest()
 	{
 		global $db_conn;
-		// // Drop old table
-		// executePlainSQL("DROP TABLE demoTable");
-
-		// // Create new table
-		// echo "<br> creating new table <br>";
-		// executePlainSQL("CREATE TABLE demoTable (id int PRIMARY KEY, name char(30))");
-
 		
 		$filename = 'sql_ddl.sql';
 		executeFromFile($filename);
@@ -397,7 +384,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	function handleInsertRequest() {
 		global $db_conn;
 	
-		// Extract POST data
 		$name = $_POST['insName'];
 		$type = $_POST['insType'];
 		$mass = $_POST['insMass'];
@@ -408,8 +394,7 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		$eccentricity = $_POST['insEcc'];
 		$spaceAgencyName = $_POST['insSpace'];
 		$discoveryMethod = $_POST['insDisc'];
-	
-		// Check if the Exoplanet name already exists
+
 		$queryExoplanet = "SELECT Name FROM Exoplanet_DiscoveredAt WHERE Name = :name";
 		$stmtCheckExoplanet = oci_parse($db_conn, $queryExoplanet);
 		oci_bind_by_name($stmtCheckExoplanet, ':name', $name);
@@ -417,30 +402,28 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	
 		if (oci_fetch($stmtCheckExoplanet)) {
 			echo "<p>Error: An exoplanet with the name '{$name}' already exists.</p>";
-			return; // Stop the function execution if the exoplanet name exists
+			return; 
 		}
 	
-		// Ensure the SpaceAgency exists or insert it
 		$querySpaceAgency = "SELECT Name FROM SpaceAgency WHERE Name = :spaceAgencyName";
 		$stmt = oci_parse($db_conn, $querySpaceAgency);
 		oci_bind_by_name($stmt, ':spaceAgencyName', $spaceAgencyName);
 		oci_execute($stmt);
 	
-		if (!oci_fetch($stmt)) { // If SpaceAgency does not exist, insert it
+		if (!oci_fetch($stmt)) {
 			$insertSpaceAgency = "INSERT INTO SpaceAgency(Name) VALUES (:spaceAgencyName)";
 			$stmtInsertAgency = oci_parse($db_conn, $insertSpaceAgency);
 			oci_bind_by_name($stmtInsertAgency, ':spaceAgencyName', $spaceAgencyName);
 			oci_execute($stmtInsertAgency);
 		}
 	
-		// Ensure the ExoplanetDimensions exists or insert it
 		$queryDimensions = "SELECT * FROM ExoplanetDimensions WHERE Mass = :mass AND Radius = :radius";
 		$stmtDimensions = oci_parse($db_conn, $queryDimensions);
 		oci_bind_by_name($stmtDimensions, ':mass', $mass);
 		oci_bind_by_name($stmtDimensions, ':radius', $radius);
 		oci_execute($stmtDimensions);
 	
-		if (!oci_fetch($stmtDimensions)) { // If ExoplanetDimensions does not exist, insert it
+		if (!oci_fetch($stmtDimensions)) { 
 			$insertDimensions = "INSERT INTO ExoplanetDimensions(Mass, Radius) VALUES (:mass, :radius)";
 			$stmtInsertDimensions = oci_parse($db_conn, $insertDimensions);
 			oci_bind_by_name($stmtInsertDimensions, ':mass', $mass);
@@ -448,7 +431,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 			oci_execute($stmtInsertDimensions);
 		}
 	
-		// Insert the Exoplanet
 		$insertExoplanet = "INSERT INTO Exoplanet_DiscoveredAt(Name, Type, Mass, Radius, \"Discovery Year\", \"Light Years from Earth\", \"Orbital Period\", Eccentricity, SpaceAgencyName, \"Discovery Method\") 
 							 VALUES (:name, :type, :mass, :radius, :discoveryYear, :lightYears, :orbitalPeriod, :eccentricity, :spaceAgencyName, :discoveryMethod)";
 		$stmtExoplanet = oci_parse($db_conn, $insertExoplanet);
