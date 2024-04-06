@@ -1,5 +1,18 @@
-<!-- 
-Adapted and expanded from the given oracle-test.php/oracle-template.php file.
+<!-- Test Oracle file for UBC CPSC304
+  Created by Jiemin Zhang
+  Modified by Simona Radu
+  Modified by Jessica Wong (2018-06-22)
+  Modified by Jason Hall (23-09-20)
+  This file shows the very basics of how to execute PHP commands on Oracle.
+  Specifically, it will drop a table, create a table, insert values update
+  values, and then query for values
+  IF YOU HAVE A TABLE CALLED "demoTable" IT WILL BE DESTROYED
+
+  The script assumes you already have a server set up All OCI commands are
+  commands to the Oracle libraries. To get the file to work, you must place it
+  somewhere where your Apache server can run it, and you must rename it to have
+  a ".php" extension. You must also change the username and password on the
+  oci_connect below to be your ORACLE username and password
 -->
 
 <?php
@@ -133,21 +146,16 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		<input type="submit" value="Project" name="projectionSubmit"></p>
 	</form>
 
-	<!-- <h2>Projection Query</h2>
-	<form method="GET" action="exoplanet-explorer.php">
-    	Table Name: <input type="text" name="tableName" required>
-    	Attributes (comma-separated): <input type="text" name="attributes" required>
-    	<input type="submit" value="Project" name="projectionSubmit"></p>
-	</form> -->
-
 	<hr />
 
 	</form>
     <h2>Number of Missions for each Space Program (GROUP BY)</h2>
+	<!-- <h2>DIVISION: Find galaxy names of those galaxies that contain all the stars in the dataset</h2> -->
+	<!-- <h2>NESTED AGGREGATION: AVERAGE NUMBER OF EXOPLANETS DISCOVERED PER YEAR</h2> -->
     <form method="GET" action="exoplanet-explorer.php">
         <input type="hidden" id="groupTuplesRequest" name="groupTuplesRequest">
-        <input type="submit" name="groupTuples" id="button"></p>
-    </form>
+        <input type="submit" value = "Submit" name="groupSubmit"></p>
+	</form>
 
 	<hr />
 
@@ -155,7 +163,7 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
     <h2>Number of Stellar Classes having more than 2 stars (HAVING)</h2>
     <form method="GET" action="exoplanet-explorer.php">
         <input type="hidden" id="havingTuplesRequest" name="havingTuplesRequest">
-        <input type="submit" name="havingTuples" id="button"></p>
+        <input type="submit" value = "Submit" id="havingSubmit"></p>
     </form>
 
 	<hr />
@@ -257,13 +265,16 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	// }
 
 	function printResult($result) {
+		// Check if there are rows to display
 		if (!oci_fetch($result)) {
 			echo "<p>No data found.</p>";
 			return;
 		}
 	
+		// Move back to the first row of the result set
 		oci_execute($result, OCI_DEFAULT);
 	
+		// Start table and add header row for column names
 		echo "<table border='1'>";
     $ncols = oci_num_fields($result);
     echo "<tr>";
@@ -340,29 +351,32 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	function executeFromFile($filename) {
 		global $success;
-		$success = True; 
+		$success = True; // Assume success unless an error occurs
 	
+		// Check if the file exists
 		if (!file_exists($filename)) {
 			echo "File not found: $filename<br>";
 			return false;
 		}
 	
+		// Read the SQL file
 		$sql = file_get_contents($filename);
 		if ($sql === false) {
 			echo "Unable to read the file: $filename<br>";
 			return false;
 		}
 
+		// Split the SQL file into individual SQL statements
 		$statements = explode(';', $sql);
 		foreach ($statements as $statement) {
 			$statement = trim($statement);
-
+			// Skip empty statements (which could appear due to the explode if there's a trailing semicolon)
 			if (!empty($statement)) {
 				executePlainSQL($statement);
-				
+				// Check the global success flag to see if the execution was successful
 				if (!$success) {
 					echo "An error occurred executing the statement: $statement<br>";
-					
+					// If one statement fails, you might decide to stop execution or continue; this example stops
 					return false;
 				}
 			}
@@ -373,6 +387,13 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	function handleResetRequest()
 	{
 		global $db_conn;
+		// // Drop old table
+		// executePlainSQL("DROP TABLE demoTable");
+
+		// // Create new table
+		// echo "<br> creating new table <br>";
+		// executePlainSQL("CREATE TABLE demoTable (id int PRIMARY KEY, name char(30))");
+
 		
 		$filename = 'sql_ddl.sql';
 		executeFromFile($filename);
@@ -384,6 +405,7 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	function handleInsertRequest() {
 		global $db_conn;
 	
+		// Extract POST data
 		$name = $_POST['insName'];
 		$type = $_POST['insType'];
 		$mass = $_POST['insMass'];
@@ -394,7 +416,8 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		$eccentricity = $_POST['insEcc'];
 		$spaceAgencyName = $_POST['insSpace'];
 		$discoveryMethod = $_POST['insDisc'];
-
+	
+		// Check if the Exoplanet name already exists
 		$queryExoplanet = "SELECT Name FROM Exoplanet_DiscoveredAt WHERE Name = :name";
 		$stmtCheckExoplanet = oci_parse($db_conn, $queryExoplanet);
 		oci_bind_by_name($stmtCheckExoplanet, ':name', $name);
@@ -402,28 +425,30 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	
 		if (oci_fetch($stmtCheckExoplanet)) {
 			echo "<p>Error: An exoplanet with the name '{$name}' already exists.</p>";
-			return; 
+			return; // Stop the function execution if the exoplanet name exists
 		}
 	
+		// Ensure the SpaceAgency exists or insert it
 		$querySpaceAgency = "SELECT Name FROM SpaceAgency WHERE Name = :spaceAgencyName";
 		$stmt = oci_parse($db_conn, $querySpaceAgency);
 		oci_bind_by_name($stmt, ':spaceAgencyName', $spaceAgencyName);
 		oci_execute($stmt);
 	
-		if (!oci_fetch($stmt)) {
+		if (!oci_fetch($stmt)) { // If SpaceAgency does not exist, insert it
 			$insertSpaceAgency = "INSERT INTO SpaceAgency(Name) VALUES (:spaceAgencyName)";
 			$stmtInsertAgency = oci_parse($db_conn, $insertSpaceAgency);
 			oci_bind_by_name($stmtInsertAgency, ':spaceAgencyName', $spaceAgencyName);
 			oci_execute($stmtInsertAgency);
 		}
 	
+		// Ensure the ExoplanetDimensions exists or insert it
 		$queryDimensions = "SELECT * FROM ExoplanetDimensions WHERE Mass = :mass AND Radius = :radius";
 		$stmtDimensions = oci_parse($db_conn, $queryDimensions);
 		oci_bind_by_name($stmtDimensions, ':mass', $mass);
 		oci_bind_by_name($stmtDimensions, ':radius', $radius);
 		oci_execute($stmtDimensions);
 	
-		if (!oci_fetch($stmtDimensions)) { 
+		if (!oci_fetch($stmtDimensions)) { // If ExoplanetDimensions does not exist, insert it
 			$insertDimensions = "INSERT INTO ExoplanetDimensions(Mass, Radius) VALUES (:mass, :radius)";
 			$stmtInsertDimensions = oci_parse($db_conn, $insertDimensions);
 			oci_bind_by_name($stmtInsertDimensions, ':mass', $mass);
@@ -431,6 +456,7 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 			oci_execute($stmtInsertDimensions);
 		}
 	
+		// Insert the Exoplanet
 		$insertExoplanet = "INSERT INTO Exoplanet_DiscoveredAt(Name, Type, Mass, Radius, \"Discovery Year\", \"Light Years from Earth\", \"Orbital Period\", Eccentricity, SpaceAgencyName, \"Discovery Method\") 
 							 VALUES (:name, :type, :mass, :radius, :discoveryYear, :lightYears, :orbitalPeriod, :eccentricity, :spaceAgencyName, :discoveryMethod)";
 		$stmtExoplanet = oci_parse($db_conn, $insertExoplanet);
@@ -530,23 +556,20 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	}
 
 	function handleGroupRequest()
-	{
-		global $db_conn;
-        $result = executePlainSQL("SELECT SpaceProgramName, COUNT(*) AS NumMissions
-		FROM Mission
-		GROUP BY SpaceProgramName");
-        //print result
-	}
+    {
+        global $db_conn;
+        // $result = executePlainSQL("SELECT SpaceProgramName, COUNT(*) AS NumMissions FROM Mission GROUP BY SpaceProgramName");
+		// $result = executePlainSQL("SELECT sc.Class, COUNT(*) AS NumStars FROM StellarClass sc JOIN Star_BelongsTo sb ON sc.Class = sb.StellarClassClass GROUP BY sc.Class HAVING COUNT(*) >= 2");
+		$result = executePlainSQL("SELECT g.Name AS GalaxyName FROM Galaxy g WHERE NOT EXISTS (SELECT s.Name FROM Star_BelongsTo s WHERE NOT EXISTS (SELECT * FROM Star_BelongsTo sb WHERE sb.GalaxyName = g.Name AND sb.Name = s.Name))");
+        printResult($result);
+    }
 
 	function handleHavingRequest()
 	{
-		global $db_conn;
-        $result = executePlainSQL("SELECT sc.Class, COUNT(*) AS NumStars
-		FROM StellarClass sc
-		JOIN Star_BelongsTo sb ON sc.Class = sb.StellarClassClass
-		GROUP BY sc.Class
-		HAVING COUNT(*) > 2");
-        printGroupResult($result);
+		// global $db_conn;
+        // $result = executePlainSQL("SELECT sc.Class, COUNT(*) AS NumStars FROM StellarClass sc JOIN Star_BelongsTo sb ON sc.Class = sb.StellarClassClass GROUP BY sc.Class HAVING COUNT(*) > 2");
+        // printResult($result);
+		print("hello");
 	}
 
 	function handleDivisionRequest()
@@ -557,7 +580,7 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		JOIN Star_BelongsTo sb ON sc.Class = sb.StellarClassClass
 		GROUP BY sc.Class
 		HAVING COUNT(*) > 2");
-        printGroupResult($result);
+        printResult($result);
 	}
 	
 
@@ -599,9 +622,9 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 				handleDisplayRequest();
 			} elseif (array_key_exists('projectionSubmit', $_GET)){
 				handleProjectionRequest();
-			} elseif (array_key_exists('groupTuples', $_GET)){
+			} elseif (array_key_exists('groupTuplesRequest', $_GET)){
 				handleGroupRequest();
-			} elseif (array_key_exists('havingTuples', $_GET)){
+			} elseif (array_key_exists('havingTuplesRequest', $_GET)){
 				handleHavingRequest();
 			} elseif (array_key_exists('divisonTuples', $_GET)){
 				handleDivisionRequest();
@@ -616,11 +639,10 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	}
 
 	if (isset($_POST['reset']) || isset($_POST['updateSubmit']) || isset($_POST['insertSubmit']) || isset($_POST['deleteSubmit']) ) {
-		handlePOSTRequest();
-	} else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || isset($_GET['joinSubmit']) 
-	|| isset($_GET['selectQuerySubmit'])) {
-		handleGETRequest();
-	}
+        handlePOSTRequest();
+    } else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || isset($_GET['groupSubmit']) || isset($_GET['havingSubmit']) || isset($_GET['joinSubmit']) || isset($_GET['selectQuerySubmit'])) {
+        handleGETRequest();
+    }
 
 	// End PHP parsing and send the rest of the HTML content
 	?>
