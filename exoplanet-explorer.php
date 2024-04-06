@@ -279,6 +279,15 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	<hr />
 
+	</form>
+    <h2>Number of missions for each Space Program (GROUP BY)</h2>
+    <form method="GET" action="exoplanet-explorer.php">
+        <input type="hidden" id="groupTuplesRequest" name="groupTuplesRequest">
+        <input type="submit" name="groupTuples" id="button"></p>
+    </form>
+
+	<hr />
+
 	<?php
 	// The following code will be parsed as PHP
 
@@ -680,6 +689,14 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	}
 
+	function handleGroupRequest()
+	{
+		global $db_conn;
+        $result = executePlainSQL("SELECT SpaceProgramName, COUNT(*) AS NumMissions
+		FROM Mission
+		GROUP BY SpaceProgramName");
+        //print result
+	}
 
 	function displayTable($tableName)
 	{
@@ -721,8 +738,9 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 				handleDisplayRequest();
 			} elseif (array_key_exists('projectionSubmit', $_GET)){
 				handleProjectionRequest();
+			} elseif (array_key_exists('groupTuples', $_GET)){
+				handleGroupRequest();
 			}
-
 			disconnectFromDB();
 		}
 	}
