@@ -430,6 +430,8 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 			echo "</tr>";
 		}
 		echo "</table>";
+
+		print("Success!")
 	}
 	
 
