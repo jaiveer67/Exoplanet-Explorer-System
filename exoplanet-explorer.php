@@ -65,12 +65,12 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		<input type="hidden" id="insertQueryRequest" name="insertQueryRequest">
 		Name: <input type="text" name="insName"> <br /><br />
 		Type: <input type="text" name="insType"> <br /><br />
-		Mass: <input type="number" name="insMass"> <br /><br />
-		Radius: <input type="number" name="insRadius"> <br /><br />
+		Mass: <input type="any" name="insMass"> <br /><br />
+		Radius: <input type="any" name="insRadius"> <br /><br />
 		Discovery Year: <input type="text" name="insYear" step="1"> <br /><br />
-		Light Years from Earth: <input type="number" name="insLight"> <br /><br />
-		Orbital Period: <input type="number" name="insOrb"> <br /><br />
-		Eccentricity: <input type="number" name="insEcc"> <br /><br />
+		Light Years from Earth: <input type="any" name="insLight"> <br /><br />
+		Orbital Period: <input type="any" name="insOrb"> <br /><br />
+		Eccentricity: <input type="any" name="insEcc"> <br /><br />
 		Space Agency Name: <input type="text" name="insSpace"> <br /><br />
 		Discovery Method: <input type="text" name="insDisc"> <br /><br />
 
