@@ -279,15 +279,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	<hr />
 
-	</form>
-    <h2>Number of missions for each Space Program (GROUP BY)</h2>
-    <form method="GET" action="exoplanet-explorer.php">
-        <input type="hidden" id="groupTuplesRequest" name="groupTuplesRequest">
-        <input type="submit" name="groupTuples" id="button"></p>
-    </form>
-
-	<hr />
-
 	<?php
 	// The following code will be parsed as PHP
 
@@ -478,60 +469,103 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 			return false;
 		}
 
-		executePlainSQL("DROP TABLE Orbits");
-		executePlainSQL("DROP TABLE Star_BelongsTo");
-		executePlainSQL("DROP TABLE StellarClass");
-		executePlainSQL("DROP TABLE Galaxy");
-		executePlainSQL("DROP TABLE WrittenBy");
-		executePlainSQL("DROP TABLE DiscoveredBy");
-		executePlainSQL("DROP TABLE Researcher_WorksAt");
-		executePlainSQL("DROP TABLE InitiatedBy");
-		executePlainSQL("DROP TABLE WrittenIn");
-		executePlainSQL("DROP TABLE Exoplanet_DiscoveredAt");
-		executePlainSQL("DROP TABLE SpaceAgency");
-		executePlainSQL("DROP TABLE Observatory");
-		executePlainSQL("DROP TABLE Mission");
-		executePlainSQL("DROP TABLE SpaceProgram");
-		executePlainSQL("DROP TABLE JournalArticle");
-		executePlainSQL("DROP TABLE ConferenceProceeding");
-		executePlainSQL("DROP TABLE BookChapter");
-		executePlainSQL("DROP TABLE Publication");
-		executePlainSQL("DROP TABLE ExoplanetDimensions");
-		executePlainSQL("CREATE TABLE StellarClass (Class VARCHAR2(200) PRIMARY KEY, TemperatureRange NUMBER, Colour VARCHAR2(200))");
-		executePlainSQL("CREATE TABLE Galaxy(Name VARCHAR2(200) PRIMARY KEY, Age NUMBER, Size_T NUMBER, \"Distance from milky way\" NUMBER)");
-		executePlainSQL("CREATE TABLE Star_BelongsTo (Name VARCHAR2(200) PRIMARY KEY, GalaxyName VARCHAR2(200) NOT NULL, Radius NUMBER, Mass NUMBER, StellarClassClass VARCHAR2(200), FOREIGN KEY (GalaxyName) REFERENCES Galaxy(Name) ON DELETE CASCADE, FOREIGN KEY (StellarClassClass) REFERENCES StellarClass(Class) ON DELETE CASCADE)");
-		executePlainSQL("CREATE TABLE SpaceAgency (Name VARCHAR2(200) PRIMARY KEY, Acronym CHAR(100), Region VARCHAR2(200))");
-		executePlainSQL("CREATE TABLE SpaceProgram (Name VARCHAR2(200) PRIMARY KEY, Objective VARCHAR2(200))");
-		executePlainSQL("CREATE TABLE Observatory (SpaceProgramName VARCHAR2(200) PRIMARY KEY, Location VARCHAR2(200), FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name) ON DELETE CASCADE)");
-		executePlainSQL("CREATE TABLE Mission (SpaceProgramName VARCHAR2(200) PRIMARY KEY, LaunchYear INT, Status VARCHAR2(200), FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name) ON DELETE CASCADE)");
-		executePlainSQL("CREATE TABLE Publication (ID INT PRIMARY KEY, Title VARCHAR2(200) NOT NULL, PeerReviewed NUMBER(1), Citation VARCHAR2(200) UNIQUE)");
-		executePlainSQL("CREATE TABLE JournalArticle (PublicationID INT PRIMARY KEY, DOI VARCHAR2(200), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE)");
-		executePlainSQL("CREATE TABLE ConferenceProceeding (PublicationID INT PRIMARY KEY, Location VARCHAR2(200), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE)");
-		executePlainSQL("CREATE TABLE BookChapter (PublicationID INT PRIMARY KEY, BookName VARCHAR2(200), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE)");
-		executePlainSQL("CREATE TABLE ExoplanetDimensions (Radius NUMBER, Mass NUMBER, Density NUMBER, Volume NUMBER, PRIMARY KEY (Radius, Mass))");
-		executePlainSQL("CREATE TABLE Researcher_WorksAt (ID VARCHAR2(200) PRIMARY KEY, Name VARCHAR2(200), Affiliation VARCHAR2(200), EmailAddress VARCHAR2(200) UNIQUE, SpaceAgencyName VARCHAR2(200), FOREIGN KEY (SpaceAgencyName) REFERENCES SpaceAgency(Name) ON DELETE CASCADE)");
-		executePlainSQL("CREATE TABLE InitiatedBy (SpaceAgencyName VARCHAR2(200), SpaceProgramName VARCHAR2(200), PRIMARY KEY (SpaceAgencyName, SpaceProgramName), FOREIGN KEY (SpaceAgencyName) REFERENCES SpaceAgency(Name) ON DELETE CASCADE, FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name) ON DELETE CASCADE)");
-		executePlainSQL("CREATE TABLE WrittenBy (PublicationID INT, ResearcherID VARCHAR2(200), PRIMARY KEY (PublicationID, ResearcherID), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE, FOREIGN KEY (ResearcherID) REFERENCES Researcher_WorksAt(ID) ON DELETE CASCADE)");
-		executePlainSQL("CREATE TABLE Exoplanet_DiscoveredAt (Name VARCHAR2(200) PRIMARY KEY, Type VARCHAR2(200), Mass NUMBER, Radius NUMBER, \"Discovery Year\" INT, \"Light Years from Earth\" NUMBER, \"Orbital Period\" NUMBER, Eccentricity NUMBER, SpaceAgencyName VARCHAR2(200), \"Discovery Method\" VARCHAR2(200), FOREIGN KEY (SpaceAgencyName) REFERENCES SpaceAgency(Name) ON DELETE CASCADE, FOREIGN KEY (Mass, Radius) REFERENCES ExoplanetDimensions(Mass, Radius) ON DELETE CASCADE)");
-		executePlainSQL("CREATE TABLE DiscoveredBy (ResearcherID VARCHAR2(200), ExoplanetName VARCHAR2(200), PRIMARY KEY (ResearcherID, ExoplanetName), FOREIGN KEY (ResearcherID) REFERENCES Researcher_WorksAt(ID) ON DELETE CASCADE, FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(Name) ON DELETE CASCADE)");
-		executePlainSQL("CREATE TABLE Orbits (ExoplanetName VARCHAR2(200), StarName VARCHAR2(200), PRIMARY KEY (ExoplanetName, StarName), FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(Name) ON DELETE CASCADE, FOREIGN KEY (StarName) REFERENCES Star_BelongsTo(Name) ON DELETE CASCADE)");
-		executePlainSQL("CREATE TABLE WrittenIn (PublicationID INT, ResearcherID VARCHAR2(200), ExoplanetName VARCHAR2(200), PRIMARY KEY (PublicationID, ExoplanetName), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE, FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(Name) ON DELETE CASCADE)");
+		// executePlainSQL("DROP TABLE Orbits");
+		// executePlainSQL("DROP TABLE Star_BelongsTo");
+		// executePlainSQL("DROP TABLE StellarClass");
+		// executePlainSQL("DROP TABLE Galaxy");
+		// executePlainSQL("DROP TABLE WrittenBy");
+		// executePlainSQL("DROP TABLE DiscoveredBy");
+		// executePlainSQL("DROP TABLE Researcher_WorksAt");
+		// executePlainSQL("DROP TABLE InitiatedBy");
+		// executePlainSQL("DROP TABLE WrittenIn");
+		// executePlainSQL("DROP TABLE Exoplanet_DiscoveredAt");
+		// executePlainSQL("DROP TABLE SpaceAgency");
+		// executePlainSQL("DROP TABLE Observatory");
+		// executePlainSQL("DROP TABLE Mission");
+		// executePlainSQL("DROP TABLE SpaceProgram");
+		// executePlainSQL("DROP TABLE JournalArticle");
+		// executePlainSQL("DROP TABLE ConferenceProceeding");
+		// executePlainSQL("DROP TABLE BookChapter");
+		// executePlainSQL("DROP TABLE Publication");
+		// executePlainSQL("DROP TABLE ExoplanetDimensions");
+		// executePlainSQL("CREATE TABLE StellarClass (Class VARCHAR2(200) PRIMARY KEY, TemperatureRange NUMBER, Colour VARCHAR2(200))");
+		// executePlainSQL("CREATE TABLE Galaxy(Name VARCHAR2(200) PRIMARY KEY, Age NUMBER, Size_T NUMBER, \"Distance from milky way\" NUMBER)");
+		// executePlainSQL("CREATE TABLE Star_BelongsTo (Name VARCHAR2(200) PRIMARY KEY, GalaxyName VARCHAR2(200) NOT NULL, Radius NUMBER, Mass NUMBER, StellarClassClass VARCHAR2(200), FOREIGN KEY (GalaxyName) REFERENCES Galaxy(Name) ON DELETE CASCADE, FOREIGN KEY (StellarClassClass) REFERENCES StellarClass(Class) ON DELETE CASCADE)");
+		// executePlainSQL("CREATE TABLE SpaceAgency (Name VARCHAR2(200) PRIMARY KEY, Acronym CHAR(100), Region VARCHAR2(200))");
+		// executePlainSQL("CREATE TABLE SpaceProgram (Name VARCHAR2(200) PRIMARY KEY, Objective VARCHAR2(200))");
+		// executePlainSQL("CREATE TABLE Observatory (SpaceProgramName VARCHAR2(200) PRIMARY KEY, Location VARCHAR2(200), FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name) ON DELETE CASCADE)");
+		// executePlainSQL("CREATE TABLE Mission (SpaceProgramName VARCHAR2(200) PRIMARY KEY, LaunchYear INT, Status VARCHAR2(200), FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name) ON DELETE CASCADE)");
+		// executePlainSQL("CREATE TABLE Publication (ID INT PRIMARY KEY, Title VARCHAR2(200) NOT NULL, PeerReviewed NUMBER(1), Citation VARCHAR2(200) UNIQUE)");
+		// executePlainSQL("CREATE TABLE JournalArticle (PublicationID INT PRIMARY KEY, DOI VARCHAR2(200), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE)");
+		// executePlainSQL("CREATE TABLE ConferenceProceeding (PublicationID INT PRIMARY KEY, Location VARCHAR2(200), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE)");
+		// executePlainSQL("CREATE TABLE BookChapter (PublicationID INT PRIMARY KEY, BookName VARCHAR2(200), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE)");
+		// executePlainSQL("CREATE TABLE ExoplanetDimensions (Radius NUMBER, Mass NUMBER, Density NUMBER, Volume NUMBER, PRIMARY KEY (Radius, Mass))");
+		// executePlainSQL("CREATE TABLE Researcher_WorksAt (ID VARCHAR2(200) PRIMARY KEY, Name VARCHAR2(200), Affiliation VARCHAR2(200), EmailAddress VARCHAR2(200) UNIQUE, SpaceAgencyName VARCHAR2(200), FOREIGN KEY (SpaceAgencyName) REFERENCES SpaceAgency(Name) ON DELETE CASCADE)");
+		// executePlainSQL("CREATE TABLE InitiatedBy (SpaceAgencyName VARCHAR2(200), SpaceProgramName VARCHAR2(200), PRIMARY KEY (SpaceAgencyName, SpaceProgramName), FOREIGN KEY (SpaceAgencyName) REFERENCES SpaceAgency(Name) ON DELETE CASCADE, FOREIGN KEY (SpaceProgramName) REFERENCES SpaceProgram(Name) ON DELETE CASCADE)");
+		// executePlainSQL("CREATE TABLE WrittenBy (PublicationID INT, ResearcherID VARCHAR2(200), PRIMARY KEY (PublicationID, ResearcherID), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE, FOREIGN KEY (ResearcherID) REFERENCES Researcher_WorksAt(ID) ON DELETE CASCADE)");
+		// executePlainSQL("CREATE TABLE Exoplanet_DiscoveredAt (Name VARCHAR2(200) PRIMARY KEY, Type VARCHAR2(200), Mass NUMBER, Radius NUMBER, \"Discovery Year\" INT, \"Light Years from Earth\" NUMBER, \"Orbital Period\" NUMBER, Eccentricity NUMBER, SpaceAgencyName VARCHAR2(200), \"Discovery Method\" VARCHAR2(200), FOREIGN KEY (SpaceAgencyName) REFERENCES SpaceAgency(Name) ON DELETE CASCADE, FOREIGN KEY (Mass, Radius) REFERENCES ExoplanetDimensions(Mass, Radius) ON DELETE CASCADE)");
+		// executePlainSQL("CREATE TABLE DiscoveredBy (ResearcherID VARCHAR2(200), ExoplanetName VARCHAR2(200), PRIMARY KEY (ResearcherID, ExoplanetName), FOREIGN KEY (ResearcherID) REFERENCES Researcher_WorksAt(ID) ON DELETE CASCADE, FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(Name) ON DELETE CASCADE)");
+		// executePlainSQL("CREATE TABLE Orbits (ExoplanetName VARCHAR2(200), StarName VARCHAR2(200), PRIMARY KEY (ExoplanetName, StarName), FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(Name) ON DELETE CASCADE, FOREIGN KEY (StarName) REFERENCES Star_BelongsTo(Name) ON DELETE CASCADE)");
+		// executePlainSQL("CREATE TABLE WrittenIn (PublicationID INT, ResearcherID VARCHAR2(200), ExoplanetName VARCHAR2(200), PRIMARY KEY (PublicationID, ExoplanetName), FOREIGN KEY (PublicationID) REFERENCES Publication(ID) ON DELETE CASCADE, FOREIGN KEY (ExoplanetName) REFERENCES Exoplanet_DiscoveredAt(Name) ON DELETE CASCADE)");
+		// executePlainSQL("INSERT INTO ExoplanetDimensions (Radius, Mass, Density, Volume) VALUES (1.17, 1.1, 0.05465441321, 20.12646254)");
+		// executePlainSQL("INSERT INTO ExoplanetDimensions (Radius, Mass, Density, Volume) VALUES (7, 1, 0.05465441321, 20.12646254)");
+		// executePlainSQL("INSERT INTO SpaceProgram(Name, Objective) VALUES ('Kepler', 'Discover Earth-like planets orbiting other stars.')");
+		// executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way\") VALUES ('Samsung Galaxy', 5, 6, 7)");
+		// executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way\") VALUES ('Andromeda Galaxy (M31)', 10, 220000, 2.537)");
+		// executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way\") VALUES ('Triangulum Galaxy (M33)', 13, 60000, 2.73)");
+		// executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way\") VALUES ('Whirlpool Galaxy (M51)', 13, 60000, 23)");
+		// executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way\") VALUES ('Sombrero Galaxy (M104)', 11, 50000, 29.3)");
+		// // executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way (light years)\") VALUES ('Pinwheel Galaxy (M101)', 13, 170000, 21)");
+		// // executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way (light years)\") VALUES ('Large Magellanic Cloud (LMC)', 13.5, 14000, 0.163)");
+		// // executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way (light years)\") VALUES ('Small Magellanic Cloud (SMC)', 13, 7000, 0.2)");
+		// // executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way (light years)\") VALUES ('Messier 87 (M87)', 13.5, 98000, 53.5)");
+		// // executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way (light years)\") VALUES ('Milky Way Galaxy', 13.51, 105700, 0)");
+		// executePlainSQL("INSERT INTO SpaceAgency(Name, Acronym, Region) VALUES ('National Aeronautics and Space Administration', 'NASA', 'USA')");
+		// executePlainSQL("INSERT INTO SpaceAgency(Name, Acronym, Region) VALUES ('European Space Agency', 'ESA', 'Europe')");
+		// executePlainSQL("INSERT INTO SpaceAgency(Name, Acronym, Region) VALUES ('Canadian Space Agency', 'CSA', 'Canada')");
+		// executePlainSQL("INSERT INTO SpaceAgency(Name, Acronym, Region) VALUES ('Indian Space Research Organisation', 'ISRO', 'India')");
+		// executePlainSQL("INSERT INTO SpaceAgency(Name, Acronym, Region) VALUES ('Japan Aerospace Exploration Agency', 'JAXA', 'Japan')");
+		// executePlainSQL("INSERT INTO SpaceAgency(Name, Acronym, Region) VALUES ('French Space Agency', 'CNES', 'France')");
+		
+
 	
 		// Split the SQL file into individual SQL statements
-		// $statements = explode(';', $sql);
-		// foreach ($statements as $statement) {
-		// 	$statement = trim($statement);
-		// 	// Skip empty statements (which could appear due to the explode if there's a trailing semicolon)
-		// 	if (!empty($statement)) {
-		// 		executePlainSQL($statement);
-		// 		// Check the global success flag to see if the execution was successful
-		// 		if (!$success) {
-		// 			echo "An error occurred executing the statement: $statement<br>";
-		// 			// If one statement fails, you might decide to stop execution or continue; this example stops
-		// 			return false;
-		// 		}
-		// 	}
-		// }
+		$statements = explode(';', $sql);
+		foreach ($statements as $statement) {
+			$statement = trim($statement);
+			// Skip empty statements (which could appear due to the explode if there's a trailing semicolon)
+			if (!empty($statement)) {
+				executePlainSQL($statement);
+				// Check the global success flag to see if the execution was successful
+				if (!$success) {
+					echo "An error occurred executing the statement: $statement<br>";
+					// If one statement fails, you might decide to stop execution or continue; this example stops
+					return false;
+				}
+			}
+		}
+
+		// executePlainSQL("INSERT INTO ExoplanetDimensions (Radius, Mass, Density, Volume) VALUES (1.17, 1.1, 0.05465441321, 20.12646254)");
+		// executePlainSQL("INSERT INTO ExoplanetDimensions (Radius, Mass, Density, Volume) VALUES (7, 1, 0.05465441321, 20.12646254)");
+		// executePlainSQL("INSERT INTO SpaceProgram(Name, Objective) VALUES ('Kepler', 'Discover Earth-like planets orbiting other stars.')");
+		// executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way\") VALUES ('Samsung Galaxy', 5, 6, 7)");
+		// executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way\") VALUES ('Andromeda Galaxy (M31)', 10, 220000, 2.537)");
+		// executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way\") VALUES ('Triangulum Galaxy (M33)', 13, 60000, 2.73)");
+		// executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way\") VALUES ('Whirlpool Galaxy (M51)', 13, 60000, 23)");
+		// executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way\") VALUES ('Sombrero Galaxy (M104)', 11, 50000, 29.3)");
+		// // executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way (light years)\") VALUES ('Pinwheel Galaxy (M101)', 13, 170000, 21)");
+		// // executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way (light years)\") VALUES ('Large Magellanic Cloud (LMC)', 13.5, 14000, 0.163)");
+		// // executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way (light years)\") VALUES ('Small Magellanic Cloud (SMC)', 13, 7000, 0.2)");
+		// // executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way (light years)\") VALUES ('Messier 87 (M87)', 13.5, 98000, 53.5)");
+		// // executePlainSQL("INSERT INTO Galaxy(Name, Age, Size_T, \"Distance from milky way (light years)\") VALUES ('Milky Way Galaxy', 13.51, 105700, 0)");
+		// executePlainSQL("INSERT INTO SpaceAgency(Name, Acronym, Region) VALUES ('National Aeronautics and Space Administration', 'NASA', 'USA')");
+		// executePlainSQL("INSERT INTO SpaceAgency(Name, Acronym, Region) VALUES ('European Space Agency', 'ESA', 'Europe')");
+		// executePlainSQL("INSERT INTO SpaceAgency(Name, Acronym, Region) VALUES ('Canadian Space Agency', 'CSA', 'Canada')");
+		// executePlainSQL("INSERT INTO SpaceAgency(Name, Acronym, Region) VALUES ('Indian Space Research Organisation', 'ISRO', 'India')");
+		// executePlainSQL("INSERT INTO SpaceAgency(Name, Acronym, Region) VALUES ('Japan Aerospace Exploration Agency', 'JAXA', 'Japan')");
+		// executePlainSQL("INSERT INTO SpaceAgency(Name, Acronym, Region) VALUES ('French Space Agency', 'CNES', 'France')");
+		
+
 		return true;
 	}
 
@@ -547,7 +581,7 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 		
 		$filename = 'sql_ddl.sql';
-		// executeFromFile($filename);
+		executeFromFile($filename);
 
 		oci_commit($db_conn);
 
@@ -574,8 +608,18 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		$alltuples = array(
 			$tuple
 		);
+		
+		$checkSpaceAgencyExists = executeBoundSQL("SELECT Name FROM SpaceAgency WHERE Name = :bind9");
+		if (!oci_fetch($checkSpaceAgencyExists)) { //checking if returned result is empty
+			executeBoundSQL("INSERT INTO SpaceAgency(Name) VALUES (:bind9)");
+		}
 
-		executeBoundSQL("insert into Exoplanet_DiscoveredAt values (:bind1, :bind2, :bind3, :bind4, :bind5, :bind6, :bind7, :bind8, :bind9, :bind10)", $alltuples);
+		$checkDimensionsExist = executeBoundSQL("SELECT (Mass, Radius) FROM ExoplanetDimensions WHERE Mass = :bind3 AND Radius = :bind4");
+		if (!oci_fetch($checkDimensionsExist)) { //checking if returned result is empty
+			executeBoundSQL("INSERT INTO ExoplanetDimensions (Mass, Radius) VALUES (:bind3, :bind4)");
+		}
+
+		executeBoundSQL("INSERT INTO Exoplanet_DiscoveredAt VALUES (:bind1, :bind2, :bind3, :bind4, :bind5, :bind6, :bind7, :bind8, :bind9, :bind10)", $alltuples);
 		oci_commit($db_conn);
 	}
 
@@ -675,7 +719,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	function handleProjectionRequest()
 	{
-
 		// global $db_conn;
 		$attributes = $_GET['attributes'];
 		$tableName = $_GET['tableName'];
@@ -685,18 +728,8 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		$result = executePlainSQL($query);
 
 		printResult($result);
-
-
 	}
 
-	function handleGroupRequest()
-	{
-		global $db_conn;
-        $result = executePlainSQL("SELECT SpaceProgramName, COUNT(*) AS NumMissions
-		FROM Mission
-		GROUP BY SpaceProgramName");
-        //print result
-	}
 
 	function displayTable($tableName)
 	{
@@ -738,9 +771,8 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 				handleDisplayRequest();
 			} elseif (array_key_exists('projectionSubmit', $_GET)){
 				handleProjectionRequest();
-			} elseif (array_key_exists('groupTuples', $_GET)){
-				handleGroupRequest();
 			}
+
 			disconnectFromDB();
 		}
 	}
