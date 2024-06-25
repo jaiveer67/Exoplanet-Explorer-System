@@ -145,9 +145,11 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
     <form method="GET" action="exoplanet-explorer.php">
         <input type="hidden" id="havingTuplesRequest" name="havingTuplesRequest">
         <input type="submit" value = "Submit" name="havingSubmit"></p>
+        <input type="submit" value = "Submit" name="havingSubmit"></p>
     </form>
 
 	<hr />
+
 
 	</form>
     <h2>DIVISION: Find galaxy names of those galaxies that contain all the stars in the dataset</h2>
@@ -160,7 +162,20 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	</form>
 	<h2>NESTED AGGREGATION: AVERAGE NUMBER OF EXOPLANETS DISCOVERED PER YEAR</h2>
+    <h2>DIVISION: Find galaxy names of those galaxies that contain all the stars in the dataset</h2>
     <form method="GET" action="exoplanet-explorer.php">
+        <input type="hidden" id="divisionRequest" name="divisionRequest">
+        <input type="submit" value = "Submit" name="divisionSubmit"></p>
+	</form>
+
+	<hr />
+
+	</form>
+	<h2>NESTED AGGREGATION: AVERAGE NUMBER OF EXOPLANETS DISCOVERED PER YEAR</h2>
+    <form method="GET" action="exoplanet-explorer.php">
+        <input type="hidden" id="nestedRequest" name="nestedRequest">
+        <input type="submit" value = "Submit" name="nestedSubmit"></p>
+	</form>
         <input type="hidden" id="nestedRequest" name="nestedRequest">
         <input type="submit" value = "Submit" name="nestedSubmit"></p>
 	</form>
@@ -289,7 +304,22 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
         	echo "<th>" . htmlspecialchars($colName ?? '', ENT_QUOTES, 'UTF-8') . "</th>";
     	}
     	echo "</tr>";
+    	$ncols = oci_num_fields($result);
+    	echo "<tr>";
+    	for ($i = 1; $i <= $ncols; $i++) {
+        	$colName = oci_field_name($result, $i);
+        	echo "<th>" . htmlspecialchars($colName ?? '', ENT_QUOTES, 'UTF-8') . "</th>";
+    	}
+    	echo "</tr>";
 
+   		while ($row = oci_fetch_assoc($result)) {
+        	echo "<tr>";
+        	foreach ($row as $item) {
+            	echo "<td>" . htmlspecialchars($item ?? '', ENT_QUOTES, 'UTF-8') . "</td>";
+       		}
+        	echo "</tr>";
+    	}
+    	echo "</table>";
    		while ($row = oci_fetch_assoc($result)) {
         	echo "<tr>";
         	foreach ($row as $item) {
@@ -377,6 +407,8 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 		echo "All tables successfully reset";
 
+		echo "All tables successfully reset";
+
 		oci_commit($db_conn);
 
 	}
@@ -395,6 +427,40 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		$eccentricity = $_POST['insEcc'];
 		$spaceAgencyName = $_POST['insSpace'];
 		$discoveryMethod = $_POST['insDisc'];
+
+		// Identify the first error condition
+    $errorCondition = null;
+    if (!isset($name) || trim($name) === '') {
+        $errorCondition = 'name';
+    } elseif (!isset($mass) || trim($mass) === '') {
+        $errorCondition = 'mass';
+    } elseif (!isset($radius) || trim($radius) === '') {
+        $errorCondition = 'radius';
+    } elseif (!isset($spaceAgencyName) || trim($spaceAgencyName) === '') {
+        $errorCondition = 'spaceAgencyName';
+    }
+
+    // Handle the error condition with a switch statement
+    switch ($errorCondition) {
+        case 'name':
+            echo "<p>Error: Name is required and cannot be null or empty.</p>";
+            return; // Stop if name is null or empty
+        case 'mass':
+            echo "<p>Error: Mass is required and cannot be null or empty.</p>";
+            return; // Stop if mass is null or empty
+        case 'radius':
+            echo "<p>Error: Radius is required and cannot be null or empty.</p>";
+            return; // Stop if radius is null or empty
+        case 'spaceAgencyName':
+            echo "<p>Error: Space Agency Name is required and cannot be null or empty.</p>";
+            return; // Stop if space agency name is null or empty
+    }
+
+		// Validate input types
+    if (!is_string($name) || !is_string($type) || !is_numeric($mass) || !is_numeric($radius) || !is_numeric($discoveryYear) || !is_numeric($lightYears) || !is_numeric($orbitalPeriod) || !is_numeric($eccentricity) || !is_string($spaceAgencyName) || !is_string($discoveryMethod)) {
+			echo "<p>Error: Incorrect input types.</p>";
+			return; // Stop the function execution if any input type is incorrect
+		}
 
 		// Identify the first error condition
     $errorCondition = null;
@@ -486,6 +552,8 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		oci_execute($stmtExoplanet);
 
 		displayTable("Exoplanet_DiscoveredAt");
+
+		displayTable("Exoplanet_DiscoveredAt");
 	
 		oci_commit($db_conn);
 		echo "<p>Exoplanet '{$name}' successfully inserted.</p>";
@@ -514,14 +582,35 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 			return;
 		}
 
+		// Ensure input is not empty
+		if (!isset($SpaceAgencyName) || trim($SpaceAgencyName) === '') {
+			echo "<p>Error: Space Agency Name is required and cannot be null or empty.</p>";
+      return; // Stop if space agency name is null or empty
+		}
+
+		// Ensure the SpaceAgency exists 
+		$querySpaceAgency = "SELECT Name FROM SpaceAgency WHERE Name = :SpaceAgencyName";
+		$stmt = oci_parse($db_conn, $querySpaceAgency);
+		oci_bind_by_name($stmt, ':SpaceAgencyName', $SpaceAgencyName);
+		oci_execute($stmt);
+
+		if (!oci_fetch($stmt)) { // If SpaceAgency does not exist, print error
+			echo "<p>Error: There is no space agency to delete with the given name.</p>";
+			return;
+		}
+
 		$result = executePlainSQL("DELETE FROM SPACEAGENCY WHERE Name ='" . $SpaceAgencyName . "'");
 		oci_commit($db_conn);
 		echo " The space agency '" . $SpaceAgencyName . "' has been removed";
+		echo " The space agency '" . $SpaceAgencyName . "' has been removed";
 		displayTable("SpaceAgency");
+		echo "\n";
 		echo "\n";
 		displayTable("Exoplanet_DiscoveredAt");
 	}
 
+	function handleSelectRequest() {
+    global $db_conn;
 	function handleSelectRequest() {
     global $db_conn;
 
@@ -583,7 +672,10 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
         }
 
 		
+
+		
 		$result = executePlainSQL("SELECT * FROM Star_BelongsTo, StellarClass " . $whereClause);
+		echo "Join successful. Here are the results: ";
 		echo "Join successful. Here are the results: ";
 		printResult($result);
 		// print("hello");
@@ -651,7 +743,11 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	}
 
 	function handleNestedRequest()
+
+	function handleNestedRequest()
 	{
+        $result = executePlainSQL('SELECT AVG(Exoplanet_discovery_count) FROM (SELECT "Discovery Year" as year, COUNT(*) as Exoplanet_discovery_count FROM Exoplanet_DiscoveredAt GROUP BY "Discovery Year")');
+        // $result = executePlainSQL('SELECT "Discovery Year" as year, COUNT(*) as Exoplanet_discovery_count FROM Exoplanet_DiscoveredAt GROUP BY "Discovery Year"'); // intermediate query
         $result = executePlainSQL('SELECT AVG(Exoplanet_discovery_count) FROM (SELECT "Discovery Year" as year, COUNT(*) as Exoplanet_discovery_count FROM Exoplanet_DiscoveredAt GROUP BY "Discovery Year")');
         // $result = executePlainSQL('SELECT "Discovery Year" as year, COUNT(*) as Exoplanet_discovery_count FROM Exoplanet_DiscoveredAt GROUP BY "Discovery Year"'); // intermediate query
 		printResult($result);
@@ -728,6 +824,7 @@ function checkTableExists($tableName) {
 	{
 		if (connectToDB()) {
 			if (array_key_exists('displayTuples', $_GET)) {
+			if (array_key_exists('displayTuples', $_GET)) {
 				handleDisplayRequest();
 			} elseif (array_key_exists('projectionSubmit', $_GET)){
 				handleProjectionRequest();
@@ -736,11 +833,15 @@ function checkTableExists($tableName) {
 			} elseif (array_key_exists('havingTuplesRequest', $_GET)){
 				handleHavingRequest();
 			} elseif (array_key_exists('divisionRequest', $_GET)){ //divisionSubmit
+			} elseif (array_key_exists('divisionRequest', $_GET)){ //divisionSubmit
 				handleDivisionRequest();
+			} elseif (array_key_exists('nestedRequest', $_GET)){
+				handleNestedRequest();
 			} elseif (array_key_exists('nestedRequest', $_GET)){
 				handleNestedRequest();
 			} else if (array_key_exists('selectQueryRequest', $_GET)) {
 				handleSelectRequest();
+			} else if (array_key_exists('joinQueryRequest', $_GET)) {
 			} else if (array_key_exists('joinQueryRequest', $_GET)) {
 				handleJoinRequest();
 			} 
@@ -751,6 +852,7 @@ function checkTableExists($tableName) {
 
 	if (isset($_POST['reset']) || isset($_POST['updateSubmit']) || isset($_POST['insertSubmit']) || isset($_POST['deleteSubmit']) ) {
         handlePOSTRequest();
+    } else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || isset($_GET['groupSubmit']) || isset($_GET['havingSubmit']) || isset($_GET['joinSubmit']) || isset($_GET['selectQuerySubmit']) || isset($_GET['divisionSubmit']) || isset($_GET['nestedSubmit'])) {
     } else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || isset($_GET['groupSubmit']) || isset($_GET['havingSubmit']) || isset($_GET['joinSubmit']) || isset($_GET['selectQuerySubmit']) || isset($_GET['divisionSubmit']) || isset($_GET['nestedSubmit'])) {
         handleGETRequest();
     }
