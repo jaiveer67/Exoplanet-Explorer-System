@@ -1,3 +1,19 @@
+<!-- Test Oracle file for UBC CPSC304
+  Created by Jiemin Zhang
+  Modified by Simona Radu
+  Modified by Jessica Wong (2018-06-22)
+  Modified by Jason Hall (23-09-20)
+  This file shows the very basics of how to execute PHP commands on Oracle.
+  Specifically, it will drop a table, create a table, insert values update
+  values, and then query for values
+  IF YOU HAVE A TABLE CALLED "demoTable" IT WILL BE DESTROYED
+
+  The script assumes you already have a server set up All OCI commands are
+  commands to the Oracle libraries. To get the file to work, you must place it
+  somewhere where your Apache server can run it, and you must rename it to have
+  a ".php" extension. You must also change the username and password on the
+  oci_connect below to be your ORACLE username and password
+-->
 
 <?php
 // The preceding tag tells the web server to parse the following text as PHP
@@ -10,6 +26,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Set some parameters
+
 
 // Database access configuration
 $config["dbuser"] = "ora_jt3135";		// change "cwl" to your own CWL
@@ -133,6 +150,8 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	</form>
     <h2>Number of Missions for each Space Program (GROUP BY)</h2>
+	<!-- <h2>DIVISION: Find galaxy names of those galaxies that contain all the stars in the dataset</h2> -->
+	<!-- <h2>NESTED AGGREGATION: AVERAGE NUMBER OF EXOPLANETS DISCOVERED PER YEAR</h2> -->
     <form method="GET" action="exoplanet-explorer.php">
         <input type="hidden" id="groupTuplesRequest" name="groupTuplesRequest">
         <input type="submit" value = "Submit" name="groupSubmit"></p>
@@ -144,26 +163,17 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
     <h2>Number of Stellar Classes having more than 2 stars (HAVING)</h2>
     <form method="GET" action="exoplanet-explorer.php">
         <input type="hidden" id="havingTuplesRequest" name="havingTuplesRequest">
-        <input type="submit" value = "Submit" name="havingSubmit"></p>
+        <input type="submit" value = "Submit" id="havingSubmit"></p>
     </form>
 
 	<hr />
-
+	
 	</form>
-    <h2>DIVISION: Find galaxy names of those galaxies that contain all the stars in the dataset</h2>
+	<h2>Division Query</h2>
     <form method="GET" action="exoplanet-explorer.php">
-        <input type="hidden" id="divisionRequest" name="divisionRequest">
-        <input type="submit" value = "Submit" name="divisionSubmit"></p>
-	</form>
-
-	<hr />
-
-	</form>
-	<h2>NESTED AGGREGATION: AVERAGE NUMBER OF EXOPLANETS DISCOVERED PER YEAR</h2>
-    <form method="GET" action="exoplanet-explorer.php">
-        <input type="hidden" id="nestedRequest" name="nestedRequest">
-        <input type="submit" value = "Submit" name="nestedSubmit"></p>
-	</form>
+        <input type="hidden" id="divisionTuplesRequest" name="divisionTuplesRequest">
+        <input type="submit" name="divisionTuples" id="button"></p>
+    </form>
 
 	<hr />
 
@@ -177,35 +187,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		if ($show_debug_alert_messages) {
 			echo "<script type='text/javascript'>alert('" . $message . "');</script>";
 		}
-	}
-
-	function connectToDB()
-	{
-		global $db_conn;
-		global $config;
-
-		// Your username is ora_(CWL_ID) and the password is a(student number). For example,
-		// ora_platypus is the username and a12345678 is the password.
-		// $db_conn = oci_connect("ora_cwl", "a12345678", "dbhost.students.cs.ubc.ca:1522/stu");
-		$db_conn = oci_connect($config["dbuser"], $config["dbpassword"], $config["dbserver"]);
-
-		if ($db_conn) {
-			debugAlertMessage("Database is Connected");
-			return true;
-		} else {
-			debugAlertMessage("Cannot connect to Database");
-			$e = OCI_Error(); // For oci_connect errors pass no handle
-			echo htmlentities($e['message']);
-			return false;
-		}
-	}
-
-	function disconnectFromDB()
-	{
-		global $db_conn;
-
-		debugAlertMessage("Disconnect from Database");
-		oci_close($db_conn);
 	}
 
 	function executePlainSQL($cmdstr)
@@ -270,6 +251,19 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		}
 	}
 
+	// function printResult($result)
+	// { //prints results from a select statement
+	// 	echo "<br>Retrieved data from table demoTable:<br>";
+	// 	echo "<table>";
+	// 	echo "<tr><th>ID</th><th>Name</th></tr>";
+
+	// 	while ($row = OCI_Fetch_Array($result, OCI_ASSOC)) {
+	// 		echo "<tr><td>" . $row["ID"] . "</td><td>" . $row["NAME"] . "</td></tr>"; //or just use "echo $row[0]"
+	// 	}
+
+	// 	echo "</table>";
+	// }
+
 	function printResult($result) {
 		// Check if there are rows to display
 		if (!oci_fetch($result)) {
@@ -282,22 +276,52 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	
 		// Start table and add header row for column names
 		echo "<table border='1'>";
-    	$ncols = oci_num_fields($result);
-    	echo "<tr>";
-    	for ($i = 1; $i <= $ncols; $i++) {
-        	$colName = oci_field_name($result, $i);
-        	echo "<th>" . htmlspecialchars($colName ?? '', ENT_QUOTES, 'UTF-8') . "</th>";
-    	}
-    	echo "</tr>";
+    $ncols = oci_num_fields($result);
+    echo "<tr>";
+    for ($i = 1; $i <= $ncols; $i++) {
+        $colName = oci_field_name($result, $i);
+        echo "<th>" . htmlspecialchars($colName ?? '', ENT_QUOTES, 'UTF-8') . "</th>";
+    }
+    echo "</tr>";
 
-   		while ($row = oci_fetch_assoc($result)) {
-        	echo "<tr>";
-        	foreach ($row as $item) {
-            	echo "<td>" . htmlspecialchars($item ?? '', ENT_QUOTES, 'UTF-8') . "</td>";
-       		}
-        	echo "</tr>";
-    	}
-    	echo "</table>";
+    while ($row = oci_fetch_assoc($result)) {
+        echo "<tr>";
+        foreach ($row as $item) {
+            echo "<td>" . htmlspecialchars($item ?? '', ENT_QUOTES, 'UTF-8') . "</td>";
+        }
+        echo "</tr>";
+    }
+    echo "</table>";
+	}
+	
+
+	function connectToDB()
+	{
+		global $db_conn;
+		global $config;
+
+		// Your username is ora_(CWL_ID) and the password is a(student number). For example,
+		// ora_platypus is the username and a12345678 is the password.
+		// $db_conn = oci_connect("ora_cwl", "a12345678", "dbhost.students.cs.ubc.ca:1522/stu");
+		$db_conn = oci_connect($config["dbuser"], $config["dbpassword"], $config["dbserver"]);
+
+		if ($db_conn) {
+			debugAlertMessage("Database is Connected");
+			return true;
+		} else {
+			debugAlertMessage("Cannot connect to Database");
+			$e = OCI_Error(); // For oci_connect errors pass no handle
+			echo htmlentities($e['message']);
+			return false;
+		}
+	}
+
+	function disconnectFromDB()
+	{
+		global $db_conn;
+
+		debugAlertMessage("Disconnect from Database");
+		oci_close($db_conn);
 	}
 
 	function handleUpdateRequest()
@@ -321,8 +345,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		EmailAddress = COALESCE('$newEmailAddress', EmailAddress), 
 		SpaceAgencyName = COALESCE('$newSpaceAgencyName', SpaceAgencyName)
 		WHERE ID = '$ID'");
-
-		displayTable("Researcher_WorksAt");
 
 		oci_commit($db_conn);
 	}
@@ -371,11 +393,10 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		// // Create new table
 		// echo "<br> creating new table <br>";
 		// executePlainSQL("CREATE TABLE demoTable (id int PRIMARY KEY, name char(30))");
+
 		
 		$filename = 'sql_ddl.sql';
 		executeFromFile($filename);
-
-		echo "All tables successfully reset";
 
 		oci_commit($db_conn);
 
@@ -395,40 +416,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		$eccentricity = $_POST['insEcc'];
 		$spaceAgencyName = $_POST['insSpace'];
 		$discoveryMethod = $_POST['insDisc'];
-
-		// Identify the first error condition
-    $errorCondition = null;
-    if (!isset($name) || trim($name) === '') {
-        $errorCondition = 'name';
-    } elseif (!isset($mass) || trim($mass) === '') {
-        $errorCondition = 'mass';
-    } elseif (!isset($radius) || trim($radius) === '') {
-        $errorCondition = 'radius';
-    } elseif (!isset($spaceAgencyName) || trim($spaceAgencyName) === '') {
-        $errorCondition = 'spaceAgencyName';
-    }
-
-    // Handle the error condition with a switch statement
-    switch ($errorCondition) {
-        case 'name':
-            echo "<p>Error: Name is required and cannot be null or empty.</p>";
-            return; // Stop if name is null or empty
-        case 'mass':
-            echo "<p>Error: Mass is required and cannot be null or empty.</p>";
-            return; // Stop if mass is null or empty
-        case 'radius':
-            echo "<p>Error: Radius is required and cannot be null or empty.</p>";
-            return; // Stop if radius is null or empty
-        case 'spaceAgencyName':
-            echo "<p>Error: Space Agency Name is required and cannot be null or empty.</p>";
-            return; // Stop if space agency name is null or empty
-    }
-
-		// Validate input types
-    if (!is_string($name) || !is_string($type) || !is_numeric($mass) || !is_numeric($radius) || !is_numeric($discoveryYear) || !is_numeric($lightYears) || !is_numeric($orbitalPeriod) || !is_numeric($eccentricity) || !is_string($spaceAgencyName) || !is_string($discoveryMethod)) {
-			echo "<p>Error: Incorrect input types.</p>";
-			return; // Stop the function execution if any input type is incorrect
-		}
 	
 		// Check if the Exoplanet name already exists
 		$queryExoplanet = "SELECT Name FROM Exoplanet_DiscoveredAt WHERE Name = :name";
@@ -484,8 +471,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		oci_bind_by_name($stmtExoplanet, ':spaceAgencyName', $spaceAgencyName);
 		oci_bind_by_name($stmtExoplanet, ':discoveryMethod', $discoveryMethod);
 		oci_execute($stmtExoplanet);
-
-		displayTable("Exoplanet_DiscoveredAt");
 	
 		oci_commit($db_conn);
 		echo "<p>Exoplanet '{$name}' successfully inserted.</p>";
@@ -497,78 +482,26 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 		$SpaceAgencyName = $_POST['insName'];
 
-		// Ensure input is not empty
-		if (!isset($SpaceAgencyName) || trim($SpaceAgencyName) === '') {
-			echo "<p>Error: Space Agency Name is required and cannot be null or empty.</p>";
-      return; // Stop if space agency name is null or empty
-		}
-
-		// Ensure the SpaceAgency exists 
-		$querySpaceAgency = "SELECT Name FROM SpaceAgency WHERE Name = :SpaceAgencyName";
-		$stmt = oci_parse($db_conn, $querySpaceAgency);
-		oci_bind_by_name($stmt, ':SpaceAgencyName', $SpaceAgencyName);
-		oci_execute($stmt);
-
-		if (!oci_fetch($stmt)) { // If SpaceAgency does not exist, print error
-			echo "<p>Error: There is no space agency to delete with the given name.</p>";
-			return;
-		}
-
 		$result = executePlainSQL("DELETE FROM SPACEAGENCY WHERE Name ='" . $SpaceAgencyName . "'");
 		oci_commit($db_conn);
-		echo " The space agency '" . $SpaceAgencyName . "' has been removed";
 		displayTable("SpaceAgency");
-		echo "\n";
 		displayTable("Exoplanet_DiscoveredAt");
 	}
 
-	function handleSelectRequest() {
-    global $db_conn;
+	function handleSelectRequest()
+	{
+		global $db_conn;
 
-    // Retrieve the user input
-    $whereClause = $_GET['Where'];
+		$whereClause = $_GET['Where'];
+		$SelectRequest = "SELECT * FROM Exoplanet_DiscoveredAt";
 
-    // Construct the query with the user-provided WHERE clause
-    $query = "SELECT * FROM Exoplanet_DiscoveredAt";
-    if (!empty($whereClause)) {
-        $query .= " WHERE " . $whereClause;
-    }
-
-    $stmt = oci_parse($db_conn, $query);
-
-    // Check for parsing errors
-    if (!$stmt) {
-        echo "<p>Error: Your request could not be executed. Please check your input.</p>";
-        return;
-    }
-
-    // Attempt to execute the query
-    $result = @oci_execute($stmt); // Suppressing error reporting with @
-
-    if (!$result) {
-        // If execution fails, print a generic error message
-        echo "<p>Error: Your request could not be executed. Please check your input.</p>";
-        // Optionally, log the detailed error message for internal review
-        $e = oci_error($stmt);
-        // error_log("Query execution error: " . $e['message']);
-        return; // Early return to stop further execution
-    }
-
-
-
-    // If execution is successful, proceed to fetch and display the results
-    // echo "<table border='1'>";
-    // echo "<tr><th>Name</th><th>Type</th><th>Mass</th><th>Radius</th></tr>";
-    // while ($row = oci_fetch_assoc($stmt)) {
-    //     echo "<tr><td>" . htmlspecialchars($row['NAME']) . "</td>"
-    //          . "<td>" . htmlspecialchars($row['TYPE']) . "</td>"
-    //          . "<td>" . htmlspecialchars($row['MASS']) . "</td>"
-    //          . "<td>" . htmlspecialchars($row['RADIUS']) . "</td></tr>";
-    // }
-    // echo "</table>";
-		echo "Here are the selected observations: ";
-		printResult($stmt);
-}
+		if (!empty($whereClause)) {
+			$SelectRequest .= " WHERE " . $whereClause;
+		}
+		$result = executePlainSQL($SelectRequest);
+		oci_commit($db_conn);
+		printResult($result);
+	}
 
 	function handleJoinRequest()
 	{
@@ -582,127 +515,81 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
             $whereClause = "";
         }
 
-		
 		$result = executePlainSQL("SELECT * FROM Star_BelongsTo, StellarClass " . $whereClause);
-		echo "Join successful. Here are the results: ";
 		printResult($result);
 		// print("hello");
 		oci_commit($db_conn);
 	}
 
+	function handleCountRequest()
+	{
+		global $db_conn;
+
+		$result = executePlainSQL("SELECT Count(*) FROM demoTable");
+
+		if (($row = oci_fetch_row($result)) != false) {
+			echo "<br> The number of tuples in demoTable: " . $row[0] . "<br>";
+		}
+	}
 
 	function handleDisplayRequest()
 	{
+		// global $db_conn;
+		// $result = executePlainSQL("SELECT * FROM demoTable");
+		// printResult($result);
 		displayTable($_GET["tableNameForDisplay"]);
 	}
 
 	function handleProjectionRequest()
-{
-    global $db_conn;
+	{
+		// global $db_conn;
+		$attributes = $_GET['attributes'];
+		$tableName = $_GET['tableNameForDisplay'];
 
-    $attributes = $_GET['attributes'];
-    $tableName = $_GET['tableNameForDisplay'];
+		$query = "SELECT DISTINCT " . $attributes . " FROM " . $tableName;
 
-		// Check if the table exists before attempting to display its content
-    if (!checkTableExists($tableName)) {
-			echo "<p>Error: The table '{$tableName}' does not exist.</p>";
-			return;
+		$result = executePlainSQL($query);
+
+		printResult($result);
+
+
 	}
-
-    // Construct the query without regex validation
-    $query = "SELECT DISTINCT " . $attributes . " FROM " . $tableName;
-    $stmt = oci_parse($db_conn, $query);
-
-    if (!$stmt) {
-        echo "<p>Error: Invalid input. Check your attribute names and table name.</p>";
-        return;
-    }
-
-    // Attempt to execute the query
-    if (!@oci_execute($stmt)) {
-        $e = oci_error($stmt);
-        echo "<p>Error: Invalid input. Check your attribute names and table name.</p>";
-        return;
-    }
-
-    // If the query executes successfully, print the results
-		echo "Projection successful. Here are your results: ";
-    printResult($stmt);
-}
-
-
 
 	function handleGroupRequest()
     {
-        $result = executePlainSQL("SELECT SpaceProgramName, COUNT(*) AS NumMissions FROM Mission GROUP BY SpaceProgramName");
-		printResult($result);
+        global $db_conn;
+        // $result = executePlainSQL("SELECT SpaceProgramName, COUNT(*) AS NumMissions FROM Mission GROUP BY SpaceProgramName");
+		// $result = executePlainSQL("SELECT sc.Class, COUNT(*) AS NumStars FROM StellarClass sc JOIN Star_BelongsTo sb ON sc.Class = sb.StellarClassClass GROUP BY sc.Class HAVING COUNT(*) >= 2");
+		$result = executePlainSQL("SELECT g.Name AS GalaxyName FROM Galaxy g WHERE NOT EXISTS (SELECT s.Name FROM Star_BelongsTo s WHERE NOT EXISTS (SELECT * FROM Star_BelongsTo sb WHERE sb.GalaxyName = g.Name AND sb.Name = s.Name))");
+        printResult($result);
     }
 
 	function handleHavingRequest()
 	{
-		$result = executePlainSQL("SELECT sc.Class, COUNT(*) AS NumStars FROM StellarClass sc JOIN Star_BelongsTo sb ON sc.Class = sb.StellarClassClass GROUP BY sc.Class HAVING COUNT(*) >= 2");
-        printResult($result);
+		// global $db_conn;
+        // $result = executePlainSQL("SELECT sc.Class, COUNT(*) AS NumStars FROM StellarClass sc JOIN Star_BelongsTo sb ON sc.Class = sb.StellarClassClass GROUP BY sc.Class HAVING COUNT(*) > 2");
+        // printResult($result);
+		print("hello");
 	}
 
 	function handleDivisionRequest()
 	{
-		$result = executePlainSQL("SELECT g.Name AS GalaxyName FROM Galaxy g WHERE NOT EXISTS (SELECT s.Name FROM Star_BelongsTo s WHERE NOT EXISTS (SELECT * FROM Star_BelongsTo sb WHERE sb.GalaxyName = g.Name AND sb.Name = s.Name))");
+		global $db_conn;
+        $result = executePlainSQL("SELECT sc.Class, COUNT(*) AS NumStars
+		FROM StellarClass sc
+		JOIN Star_BelongsTo sb ON sc.Class = sb.StellarClassClass
+		GROUP BY sc.Class
+		HAVING COUNT(*) > 2");
         printResult($result);
-	}
-
-	function handleNestedRequest()
-	{
-        $result = executePlainSQL('SELECT AVG(Exoplanet_discovery_count) FROM (SELECT "Discovery Year" as year, COUNT(*) as Exoplanet_discovery_count FROM Exoplanet_DiscoveredAt GROUP BY "Discovery Year")');
-        // $result = executePlainSQL('SELECT "Discovery Year" as year, COUNT(*) as Exoplanet_discovery_count FROM Exoplanet_DiscoveredAt GROUP BY "Discovery Year"'); // intermediate query
-		printResult($result);
 	}
 	
 
-	function displayTable($tableName) {
-    global $db_conn;
-
-    // Check if the table exists before attempting to display its content
-    if (!checkTableExists($tableName)) {
-        echo "<p>Error: The table '{$tableName}' does not exist.</p>";
-        return;
-    }
-
-    // Proceed with the original logic to display the table
-    $query = "SELECT * FROM " . $tableName;
-    $stmt = oci_parse($db_conn, $query);
-    $r = oci_execute($stmt);
-
-    // Assuming successful execution, proceed to fetch and display the results
-		printResult($stmt);
-}
-
-function checkTableExists($tableName) {
-	global $db_conn;
-
-	// Attempt a query that will fail if the table doesn't exist
-	$query = "SELECT 1 FROM " . $tableName . " WHERE ROWNUM = 1";
-	$stmt = oci_parse($db_conn, $query);
-
-	if (!$stmt) {
-			// If oci_parse fails, it's a bad sign but doesn't necessarily mean the table doesn't exist
-			return false;
+	function displayTable($tableName)
+	{
+		// global $db_conn;
+		$result = executePlainSQL("SELECT * FROM " . $tableName);
+		printResult($result);
 	}
-
-	// Suppress PHP warnings and attempt to execute the query
-	$r = @oci_execute($stmt);
-
-	if (!$r) {
-			// If execution fails, check the error code for ORA-00942
-			$e = oci_error($stmt);
-			if (strpos($e['message'], 'ORA-00942') !== false) {
-					// Table does not exist
-					return false;
-			}
-	}
-
-	// If we reach this point, the table exists
-	return true;
-}
 
 	// HANDLE ALL POST ROUTES
 	// A better coding practice is to have one method that reroutes your requests accordingly. It will make it easier to add/remove functionality.
@@ -717,6 +604,8 @@ function checkTableExists($tableName) {
 				handleInsertRequest();
 			} else if (array_key_exists('deleteQueryRequest', $_POST)) {
 				handleDeleteRequest();
+			} else if (array_key_exists('selectQueryRequest', $_POST)) {
+				handleSelectRequest();
 			}
 			disconnectFromDB();
 		}
@@ -727,7 +616,9 @@ function checkTableExists($tableName) {
 	function handleGETRequest()
 	{
 		if (connectToDB()) {
-			if (array_key_exists('displayTuples', $_GET)) {
+			if (array_key_exists('countTuples', $_GET)) {
+				handleCountRequest();
+			} elseif (array_key_exists('displayTuples', $_GET)) {
 				handleDisplayRequest();
 			} elseif (array_key_exists('projectionSubmit', $_GET)){
 				handleProjectionRequest();
@@ -735,13 +626,11 @@ function checkTableExists($tableName) {
 				handleGroupRequest();
 			} elseif (array_key_exists('havingTuplesRequest', $_GET)){
 				handleHavingRequest();
-			} elseif (array_key_exists('divisionRequest', $_GET)){ //divisionSubmit
+			} elseif (array_key_exists('divisonTuples', $_GET)){
 				handleDivisionRequest();
-			} elseif (array_key_exists('nestedRequest', $_GET)){
-				handleNestedRequest();
 			} else if (array_key_exists('selectQueryRequest', $_GET)) {
 				handleSelectRequest();
-			} else if (array_key_exists('joinQueryRequest', $_GET)) {
+			}  else if (array_key_exists('joinQueryRequest', $_GET)) {
 				handleJoinRequest();
 			} 
 
@@ -751,7 +640,7 @@ function checkTableExists($tableName) {
 
 	if (isset($_POST['reset']) || isset($_POST['updateSubmit']) || isset($_POST['insertSubmit']) || isset($_POST['deleteSubmit']) ) {
         handlePOSTRequest();
-    } else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || isset($_GET['groupSubmit']) || isset($_GET['havingSubmit']) || isset($_GET['joinSubmit']) || isset($_GET['selectQuerySubmit']) || isset($_GET['divisionSubmit']) || isset($_GET['nestedSubmit'])) {
+    } else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || isset($_GET['groupSubmit']) || isset($_GET['havingSubmit']) || isset($_GET['joinSubmit']) || isset($_GET['selectQuerySubmit'])) {
         handleGETRequest();
     }
 
