@@ -1,0 +1,15 @@
+# Use an official PHP image with built-in server
+FROM php:8.2-cli
+
+# Install PDO and SQLite extensions
+RUN docker-php-ext-install pdo pdo_sqlite
+
+# Copy project files into container
+COPY . /app
+WORKDIR /app
+
+# Expose the port that PHP built-in server will run on
+EXPOSE 10000
+
+# Start the PHP server
+CMD ["php", "-S", "0.0.0.0:10000", "exoplanet-explorer.php"]
