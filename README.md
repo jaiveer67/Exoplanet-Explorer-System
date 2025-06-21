@@ -2,6 +2,7 @@
 
 ## 🌐 Website  
 
+https://exoplanet-explorer-system.onrender.com
 
 ## 👥 Original Team Members (UBC CPSC304 Project)
 - Jaiveer Tiwana
