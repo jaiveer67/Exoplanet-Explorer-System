@@ -1,5 +1,13 @@
 
 <?php
+try {
+    $db_conn = new PDO('sqlite:db/exoplanet.db');
+    $db_conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    echo "Connection failed: " . htmlspecialchars($e->getMessage());
+    exit;
+}
+
 // The preceding tag tells the web server to parse the following text as PHP
 // rather than HTML (the default)
 
@@ -8,14 +16,6 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-
-// Set some parameters
-
-// Database access configuration
-$config["dbuser"] = "ora_jt3135";		// change "cwl" to your own CWL
-$config["dbpassword"] = "a54932769";	// change to 'a' + your student number
-$config["dbserver"] = "dbhost.students.cs.ubc.ca:1522/stu";
-$db_conn = NULL;	// login credentials are used in connectToDB()
 
 $success = true;	// keep track of errors so page redirects only if there are no errors
 
@@ -145,7 +145,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
     <form method="GET" action="exoplanet-explorer.php">
         <input type="hidden" id="havingTuplesRequest" name="havingTuplesRequest">
         <input type="submit" value = "Submit" name="havingSubmit"></p>
-        <input type="submit" value = "Submit" name="havingSubmit"></p>
     </form>
 
 	<hr />
@@ -162,20 +161,7 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	</form>
 	<h2>NESTED AGGREGATION: AVERAGE NUMBER OF EXOPLANETS DISCOVERED PER YEAR</h2>
-    <h2>DIVISION: Find galaxy names of those galaxies that contain all the stars in the dataset</h2>
     <form method="GET" action="exoplanet-explorer.php">
-        <input type="hidden" id="divisionRequest" name="divisionRequest">
-        <input type="submit" value = "Submit" name="divisionSubmit"></p>
-	</form>
-
-	<hr />
-
-	</form>
-	<h2>NESTED AGGREGATION: AVERAGE NUMBER OF EXOPLANETS DISCOVERED PER YEAR</h2>
-    <form method="GET" action="exoplanet-explorer.php">
-        <input type="hidden" id="nestedRequest" name="nestedRequest">
-        <input type="submit" value = "Submit" name="nestedSubmit"></p>
-	</form>
         <input type="hidden" id="nestedRequest" name="nestedRequest">
         <input type="submit" value = "Submit" name="nestedSubmit"></p>
 	</form>
@@ -202,7 +188,8 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		// Your username is ora_(CWL_ID) and the password is a(student number). For example,
 		// ora_platypus is the username and a12345678 is the password.
 		// $db_conn = oci_connect("ora_cwl", "a12345678", "dbhost.students.cs.ubc.ca:1522/stu");
-		$db_conn = oci_connect($config["dbuser"], $config["dbpassword"], $config["dbserver"]);
+		$db_conn = new PDO("sqlite:db/exoplanet.db");
+		$db_conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 		if ($db_conn) {
 			debugAlertMessage("Database is Connected");
@@ -218,446 +205,58 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	function disconnectFromDB()
 	{
 		global $db_conn;
-
+		$db_conn = null; // Close the connection
 		debugAlertMessage("Disconnect from Database");
-		oci_close($db_conn);
 	}
 
-	function executePlainSQL($cmdstr)
-	{ //takes a plain (no bound variables) SQL command and executes it
-		//echo "<br>running ".$cmdstr."<br>";
-		global $db_conn, $success;
+	function executePlainSQL($cmdstr) {
+    global $db_conn;
+    try {
+        return $db_conn->query($cmdstr);
+    } catch (PDOException $e) {
+        echo "<p>Error executing query: " . htmlspecialchars($e->getMessage()) . "</p>";
+        return false;
+    }
+}
 
-		$statement = oci_parse($db_conn, $cmdstr);
-		//There are a set of comments at the end of the file that describe some of the OCI specific functions and how they work
-
-		if (!$statement) {
-			echo "<br>Cannot parse the following command: " . $cmdstr . "<br>";
-			$e = OCI_Error($db_conn); // For oci_parse errors pass the connection handle
-			echo htmlentities($e['message']);
-			$success = False;
-		}
-
-		$r = oci_execute($statement, OCI_DEFAULT);
-		if (!$r) {
-			echo "<br>Cannot execute the following command: " . $cmdstr . "<br>";
-			$e = oci_error($statement); // For oci_execute errors pass the statementhandle
-			echo htmlentities($e['message']);
-			$success = False;
-		}
-
-		return $statement;
-	}
-
-	function executeBoundSQL($cmdstr, $list)
-	{
-		/* Sometimes the same statement will be executed several times with different values for the variables involved in the query.
-		In this case you don't need to create the statement several times. Bound variables cause a statement to only be
-		parsed once and you can reuse the statement. This is also very useful in protecting against SQL injection.
-		See the sample code below for how this function is used */
-
-		global $db_conn, $success;
-		$statement = oci_parse($db_conn, $cmdstr);
-
-		if (!$statement) {
-			echo "<br>Cannot parse the following command: " . $cmdstr . "<br>";
-			$e = OCI_Error($db_conn);
-			echo htmlentities($e['message']);
-			$success = False;
-		}
-
-		foreach ($list as $tuple) {
-			foreach ($tuple as $bind => $val) {
-				//echo $val;
-				//echo "<br>".$bind."<br>";
-				oci_bind_by_name($statement, $bind, $val);
-				unset($val); //make sure you do not remove this. Otherwise $val will remain in an array object wrapper which will not be recognized by Oracle as a proper datatype
+	function executeBoundSQL($cmdstr, $list) {
+		global $db_conn;
+		try {
+			$stmt = $db_conn->prepare($cmdstr);
+			foreach ($list as $tuple) {
+				$stmt->execute($tuple);
 			}
-
-			$r = oci_execute($statement, OCI_DEFAULT);
-			if (!$r) {
-				echo "<br>Cannot execute the following command: " . $cmdstr . "<br>";
-				$e = OCI_Error($statement); // For oci_execute errors, pass the statementhandle
-				echo htmlentities($e['message']);
-				echo "<br>";
-				$success = False;
-			}
+			return true;
+		} catch (PDOException $e) {
+			echo "<p>Error executing bound SQL: " . htmlspecialchars($e->getMessage()) . "</p>";
+			return false;
 		}
 	}
 
-	function printResult($result) {
-		// Check if there are rows to display
-		if (!oci_fetch($result)) {
+	function printResult($stmt) {
+		if (!$stmt) {
+			echo "<p>No results.</p>";
+			return;
+		}
+		$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		if (!$rows) {
 			echo "<p>No data found.</p>";
 			return;
 		}
-	
-		// Move back to the first row of the result set
-		oci_execute($result, OCI_DEFAULT);
-	
-		// Start table and add header row for column names
-		echo "<table border='1'>";
-    	$ncols = oci_num_fields($result);
-    	echo "<tr>";
-    	for ($i = 1; $i <= $ncols; $i++) {
-        	$colName = oci_field_name($result, $i);
-        	echo "<th>" . htmlspecialchars($colName ?? '', ENT_QUOTES, 'UTF-8') . "</th>";
-    	}
-    	echo "</tr>";
-    	$ncols = oci_num_fields($result);
-    	echo "<tr>";
-    	for ($i = 1; $i <= $ncols; $i++) {
-        	$colName = oci_field_name($result, $i);
-        	echo "<th>" . htmlspecialchars($colName ?? '', ENT_QUOTES, 'UTF-8') . "</th>";
-    	}
-    	echo "</tr>";
-
-   		while ($row = oci_fetch_assoc($result)) {
-        	echo "<tr>";
-        	foreach ($row as $item) {
-            	echo "<td>" . htmlspecialchars($item ?? '', ENT_QUOTES, 'UTF-8') . "</td>";
-       		}
-        	echo "</tr>";
-    	}
-    	echo "</table>";
-   		while ($row = oci_fetch_assoc($result)) {
-        	echo "<tr>";
-        	foreach ($row as $item) {
-            	echo "<td>" . htmlspecialchars($item ?? '', ENT_QUOTES, 'UTF-8') . "</td>";
-       		}
-        	echo "</tr>";
-    	}
-    	echo "</table>";
-	}
-
-	function handleUpdateRequest()
-	{
-		global $db_conn;
-
-		$ID = $_POST['ID'];
-        $newName = $_POST['newName'];
-        $newAffiliation = $_POST['newAffiliation'];
-        $newEmailAddress = $_POST['newEmailAddress'];
-        $newSpaceAgencyName = $_POST['newSpaceAgencyName'];
-
-		if(!is_string($ID) || !is_string($newName) || !is_string($newAffiliation) || !is_string($newEmailAddress) || !is_string($newSpaceAgencyName)) {
-            echo "Error: All fields must be of type string.";
-            return;
-        }
-
-		executePlainSQL("UPDATE Researcher_WorksAt SET 
-		Name = COALESCE('$newName', Name), 
-		Affiliation = COALESCE('$newAffiliation', Affiliation), 
-		EmailAddress = COALESCE('$newEmailAddress', EmailAddress), 
-		SpaceAgencyName = COALESCE('$newSpaceAgencyName', SpaceAgencyName)
-		WHERE ID = '$ID'");
-
-		displayTable("Researcher_WorksAt");
-
-		oci_commit($db_conn);
-	}
-
-	function executeFromFile($filename) {
-		global $success;
-		$success = True; // Assume success unless an error occurs
-	
-		// Check if the file exists
-		if (!file_exists($filename)) {
-			echo "File not found: $filename<br>";
-			return false;
+		echo "<table border='1'><tr>";
+		foreach (array_keys($rows[0]) as $colName) {
+			echo "<th>" . htmlspecialchars($colName, ENT_QUOTES, 'UTF-8') . "</th>";
 		}
-	
-		// Read the SQL file
-		$sql = file_get_contents($filename);
-		if ($sql === false) {
-			echo "Unable to read the file: $filename<br>";
-			return false;
-		}
-
-		// Split the SQL file into individual SQL statements
-		$statements = explode(';', $sql);
-		foreach ($statements as $statement) {
-			$statement = trim($statement);
-			// Skip empty statements (which could appear due to the explode if there's a trailing semicolon)
-			if (!empty($statement)) {
-				executePlainSQL($statement);
-				// Check the global success flag to see if the execution was successful
-				if (!$success) {
-					echo "An error occurred executing the statement: $statement<br>";
-					// If one statement fails, you might decide to stop execution or continue; this example stops
-					return false;
-				}
+		echo "</tr>";
+		foreach ($rows as $row) {
+			echo "<tr>";
+			foreach ($row as $item) {
+				echo "<td>" . htmlspecialchars($item ?? '', ENT_QUOTES, 'UTF-8') . "</td>";
 			}
+			echo "</tr>";
 		}
-		return true;
+		echo "</table>";
 	}
-
-	function handleResetRequest()
-	{
-		global $db_conn;
-		// // Drop old table
-		// executePlainSQL("DROP TABLE demoTable");
-
-		// // Create new table
-		// echo "<br> creating new table <br>";
-		// executePlainSQL("CREATE TABLE demoTable (id int PRIMARY KEY, name char(30))");
-		
-		$filename = 'sql_ddl.sql';
-		executeFromFile($filename);
-
-		echo "All tables successfully reset";
-
-		echo "All tables successfully reset";
-
-		oci_commit($db_conn);
-
-	}
-
-	function handleInsertRequest() {
-		global $db_conn;
-	
-		// Extract POST data
-		$name = $_POST['insName'];
-		$type = $_POST['insType'];
-		$mass = $_POST['insMass'];
-		$radius = $_POST['insRadius'];
-		$discoveryYear = $_POST['insYear'];
-		$lightYears = $_POST['insLight'];
-		$orbitalPeriod = $_POST['insOrb'];
-		$eccentricity = $_POST['insEcc'];
-		$spaceAgencyName = $_POST['insSpace'];
-		$discoveryMethod = $_POST['insDisc'];
-
-		// Identify the first error condition
-    $errorCondition = null;
-    if (!isset($name) || trim($name) === '') {
-        $errorCondition = 'name';
-    } elseif (!isset($mass) || trim($mass) === '') {
-        $errorCondition = 'mass';
-    } elseif (!isset($radius) || trim($radius) === '') {
-        $errorCondition = 'radius';
-    } elseif (!isset($spaceAgencyName) || trim($spaceAgencyName) === '') {
-        $errorCondition = 'spaceAgencyName';
-    }
-
-    // Handle the error condition with a switch statement
-    switch ($errorCondition) {
-        case 'name':
-            echo "<p>Error: Name is required and cannot be null or empty.</p>";
-            return; // Stop if name is null or empty
-        case 'mass':
-            echo "<p>Error: Mass is required and cannot be null or empty.</p>";
-            return; // Stop if mass is null or empty
-        case 'radius':
-            echo "<p>Error: Radius is required and cannot be null or empty.</p>";
-            return; // Stop if radius is null or empty
-        case 'spaceAgencyName':
-            echo "<p>Error: Space Agency Name is required and cannot be null or empty.</p>";
-            return; // Stop if space agency name is null or empty
-    }
-
-		// Validate input types
-    if (!is_string($name) || !is_string($type) || !is_numeric($mass) || !is_numeric($radius) || !is_numeric($discoveryYear) || !is_numeric($lightYears) || !is_numeric($orbitalPeriod) || !is_numeric($eccentricity) || !is_string($spaceAgencyName) || !is_string($discoveryMethod)) {
-			echo "<p>Error: Incorrect input types.</p>";
-			return; // Stop the function execution if any input type is incorrect
-		}
-
-		// Identify the first error condition
-    $errorCondition = null;
-    if (!isset($name) || trim($name) === '') {
-        $errorCondition = 'name';
-    } elseif (!isset($mass) || trim($mass) === '') {
-        $errorCondition = 'mass';
-    } elseif (!isset($radius) || trim($radius) === '') {
-        $errorCondition = 'radius';
-    } elseif (!isset($spaceAgencyName) || trim($spaceAgencyName) === '') {
-        $errorCondition = 'spaceAgencyName';
-    }
-
-    // Handle the error condition with a switch statement
-    switch ($errorCondition) {
-        case 'name':
-            echo "<p>Error: Name is required and cannot be null or empty.</p>";
-            return; // Stop if name is null or empty
-        case 'mass':
-            echo "<p>Error: Mass is required and cannot be null or empty.</p>";
-            return; // Stop if mass is null or empty
-        case 'radius':
-            echo "<p>Error: Radius is required and cannot be null or empty.</p>";
-            return; // Stop if radius is null or empty
-        case 'spaceAgencyName':
-            echo "<p>Error: Space Agency Name is required and cannot be null or empty.</p>";
-            return; // Stop if space agency name is null or empty
-    }
-
-		// Validate input types
-    if (!is_string($name) || !is_string($type) || !is_numeric($mass) || !is_numeric($radius) || !is_numeric($discoveryYear) || !is_numeric($lightYears) || !is_numeric($orbitalPeriod) || !is_numeric($eccentricity) || !is_string($spaceAgencyName) || !is_string($discoveryMethod)) {
-			echo "<p>Error: Incorrect input types.</p>";
-			return; // Stop the function execution if any input type is incorrect
-		}
-	
-		// Check if the Exoplanet name already exists
-		$queryExoplanet = "SELECT Name FROM Exoplanet_DiscoveredAt WHERE Name = :name";
-		$stmtCheckExoplanet = oci_parse($db_conn, $queryExoplanet);
-		oci_bind_by_name($stmtCheckExoplanet, ':name', $name);
-		oci_execute($stmtCheckExoplanet);
-	
-		if (oci_fetch($stmtCheckExoplanet)) {
-			echo "<p>Error: An exoplanet with the name '{$name}' already exists.</p>";
-			return; // Stop the function execution if the exoplanet name exists
-		}
-	
-		// Ensure the SpaceAgency exists or insert it
-		$querySpaceAgency = "SELECT Name FROM SpaceAgency WHERE Name = :spaceAgencyName";
-		$stmt = oci_parse($db_conn, $querySpaceAgency);
-		oci_bind_by_name($stmt, ':spaceAgencyName', $spaceAgencyName);
-		oci_execute($stmt);
-	
-		if (!oci_fetch($stmt)) { // If SpaceAgency does not exist, insert it
-			$insertSpaceAgency = "INSERT INTO SpaceAgency(Name) VALUES (:spaceAgencyName)";
-			$stmtInsertAgency = oci_parse($db_conn, $insertSpaceAgency);
-			oci_bind_by_name($stmtInsertAgency, ':spaceAgencyName', $spaceAgencyName);
-			oci_execute($stmtInsertAgency);
-		}
-	
-		// Ensure the ExoplanetDimensions exists or insert it
-		$queryDimensions = "SELECT * FROM ExoplanetDimensions WHERE Mass = :mass AND Radius = :radius";
-		$stmtDimensions = oci_parse($db_conn, $queryDimensions);
-		oci_bind_by_name($stmtDimensions, ':mass', $mass);
-		oci_bind_by_name($stmtDimensions, ':radius', $radius);
-		oci_execute($stmtDimensions);
-	
-		if (!oci_fetch($stmtDimensions)) { // If ExoplanetDimensions does not exist, insert it
-			$insertDimensions = "INSERT INTO ExoplanetDimensions(Mass, Radius) VALUES (:mass, :radius)";
-			$stmtInsertDimensions = oci_parse($db_conn, $insertDimensions);
-			oci_bind_by_name($stmtInsertDimensions, ':mass', $mass);
-			oci_bind_by_name($stmtInsertDimensions, ':radius', $radius);
-			oci_execute($stmtInsertDimensions);
-		}
-	
-		// Insert the Exoplanet
-		$insertExoplanet = "INSERT INTO Exoplanet_DiscoveredAt(Name, Type, Mass, Radius, \"Discovery Year\", \"Light Years from Earth\", \"Orbital Period\", Eccentricity, SpaceAgencyName, \"Discovery Method\") 
-							 VALUES (:name, :type, :mass, :radius, :discoveryYear, :lightYears, :orbitalPeriod, :eccentricity, :spaceAgencyName, :discoveryMethod)";
-		$stmtExoplanet = oci_parse($db_conn, $insertExoplanet);
-		oci_bind_by_name($stmtExoplanet, ':name', $name);
-		oci_bind_by_name($stmtExoplanet, ':type', $type);
-		oci_bind_by_name($stmtExoplanet, ':mass', $mass);
-		oci_bind_by_name($stmtExoplanet, ':radius', $radius);
-		oci_bind_by_name($stmtExoplanet, ':discoveryYear', $discoveryYear);
-		oci_bind_by_name($stmtExoplanet, ':lightYears', $lightYears);
-		oci_bind_by_name($stmtExoplanet, ':orbitalPeriod', $orbitalPeriod);
-		oci_bind_by_name($stmtExoplanet, ':eccentricity', $eccentricity);
-		oci_bind_by_name($stmtExoplanet, ':spaceAgencyName', $spaceAgencyName);
-		oci_bind_by_name($stmtExoplanet, ':discoveryMethod', $discoveryMethod);
-		oci_execute($stmtExoplanet);
-
-		displayTable("Exoplanet_DiscoveredAt");
-
-		displayTable("Exoplanet_DiscoveredAt");
-	
-		oci_commit($db_conn);
-		echo "<p>Exoplanet '{$name}' successfully inserted.</p>";
-	}
-
-	function handleDeleteRequest()
-	{
-		global $db_conn;
-
-		$SpaceAgencyName = $_POST['insName'];
-
-		// Ensure input is not empty
-		if (!isset($SpaceAgencyName) || trim($SpaceAgencyName) === '') {
-			echo "<p>Error: Space Agency Name is required and cannot be null or empty.</p>";
-      return; // Stop if space agency name is null or empty
-		}
-
-		// Ensure the SpaceAgency exists 
-		$querySpaceAgency = "SELECT Name FROM SpaceAgency WHERE Name = :SpaceAgencyName";
-		$stmt = oci_parse($db_conn, $querySpaceAgency);
-		oci_bind_by_name($stmt, ':SpaceAgencyName', $SpaceAgencyName);
-		oci_execute($stmt);
-
-		if (!oci_fetch($stmt)) { // If SpaceAgency does not exist, print error
-			echo "<p>Error: There is no space agency to delete with the given name.</p>";
-			return;
-		}
-
-		// Ensure input is not empty
-		if (!isset($SpaceAgencyName) || trim($SpaceAgencyName) === '') {
-			echo "<p>Error: Space Agency Name is required and cannot be null or empty.</p>";
-      return; // Stop if space agency name is null or empty
-		}
-
-		// Ensure the SpaceAgency exists 
-		$querySpaceAgency = "SELECT Name FROM SpaceAgency WHERE Name = :SpaceAgencyName";
-		$stmt = oci_parse($db_conn, $querySpaceAgency);
-		oci_bind_by_name($stmt, ':SpaceAgencyName', $SpaceAgencyName);
-		oci_execute($stmt);
-
-		if (!oci_fetch($stmt)) { // If SpaceAgency does not exist, print error
-			echo "<p>Error: There is no space agency to delete with the given name.</p>";
-			return;
-		}
-
-		$result = executePlainSQL("DELETE FROM SPACEAGENCY WHERE Name ='" . $SpaceAgencyName . "'");
-		oci_commit($db_conn);
-		echo " The space agency '" . $SpaceAgencyName . "' has been removed";
-		echo " The space agency '" . $SpaceAgencyName . "' has been removed";
-		displayTable("SpaceAgency");
-		echo "\n";
-		echo "\n";
-		displayTable("Exoplanet_DiscoveredAt");
-	}
-
-	function handleSelectRequest() {
-    global $db_conn;
-	function handleSelectRequest() {
-    global $db_conn;
-
-    // Retrieve the user input
-    $whereClause = $_GET['Where'];
-
-    // Construct the query with the user-provided WHERE clause
-    $query = "SELECT * FROM Exoplanet_DiscoveredAt";
-    if (!empty($whereClause)) {
-        $query .= " WHERE " . $whereClause;
-    }
-
-    $stmt = oci_parse($db_conn, $query);
-
-    // Check for parsing errors
-    if (!$stmt) {
-        echo "<p>Error: Your request could not be executed. Please check your input.</p>";
-        return;
-    }
-
-    // Attempt to execute the query
-    $result = @oci_execute($stmt); // Suppressing error reporting with @
-
-    if (!$result) {
-        // If execution fails, print a generic error message
-        echo "<p>Error: Your request could not be executed. Please check your input.</p>";
-        // Optionally, log the detailed error message for internal review
-        $e = oci_error($stmt);
-        // error_log("Query execution error: " . $e['message']);
-        return; // Early return to stop further execution
-    }
-
-
-
-    // If execution is successful, proceed to fetch and display the results
-    // echo "<table border='1'>";
-    // echo "<tr><th>Name</th><th>Type</th><th>Mass</th><th>Radius</th></tr>";
-    // while ($row = oci_fetch_assoc($stmt)) {
-    //     echo "<tr><td>" . htmlspecialchars($row['NAME']) . "</td>"
-    //          . "<td>" . htmlspecialchars($row['TYPE']) . "</td>"
-    //          . "<td>" . htmlspecialchars($row['MASS']) . "</td>"
-    //          . "<td>" . htmlspecialchars($row['RADIUS']) . "</td></tr>";
-    // }
-    // echo "</table>";
-		echo "Here are the selected observations: ";
-		printResult($stmt);
-}
 
 	function handleJoinRequest()
 	{
@@ -670,16 +269,84 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
         } else {
             $whereClause = "";
         }
-
-		
-
 		
 		$result = executePlainSQL("SELECT * FROM Star_BelongsTo, StellarClass " . $whereClause);
 		echo "Join successful. Here are the results: ";
-		echo "Join successful. Here are the results: ";
 		printResult($result);
-		// print("hello");
-		oci_commit($db_conn);
+	}
+
+	function handleUpdateRequest()
+	{
+		global $db_conn;
+
+		$id = $_POST['ID'];
+		$newName = $_POST['newName'];
+		$newAffiliation = $_POST['newAffiliation'];
+		$newEmailAddress = $_POST['newEmailAddress'];
+		$newSpaceAgencyName = $_POST['newSpaceAgencyName'];
+
+		if (empty($id)) {
+			echo "<p>Error: ID cannot be empty.</p>";
+			return;
+		}
+
+		$setClause = [];
+		if (!empty($newName)) {
+			$setClause[] = "Name = '" . $newName . "'";
+		}
+		if (!empty($newAffiliation)) {
+			$setClause[] = "Affiliation = '" . $newAffiliation . "'";
+		}
+		if (!empty($newEmailAddress)) {
+			$setClause[] = "EmailAddress = '" . $newEmailAddress . "'";
+		}
+		if (!empty($newSpaceAgencyName)) {
+			$setClause[] = "SpaceAgencyName = '" . $newSpaceAgencyName . "'";
+		}
+
+		if (empty($setClause)) {
+			echo "<p>Error: No fields to update.</p>";
+			return;
+		}
+
+		$query = "UPDATE Researcher_WorksAt SET " . implode(", ", $setClause) . " WHERE ID = :id";
+		$stmt = $db_conn->prepare($query);
+		$stmt->bindParam(':id', $id, PDO::PARAM_INT);
+
+		if (!$stmt->execute()) {
+			echo "<p>Error: Invalid input. Check your values.</p>";
+			return;
+		}
+		if (function_exists('displayTable')) {
+            displayTable("Researcher_WorksAt");
+        }
+		echo "<p>Update successful.</p>";
+	}
+
+	function handleDeleteRequest()
+	{
+		global $db_conn;
+
+		$name = $_POST['insName'];
+
+		if (empty($name)) {
+			echo "<p>Error: Name cannot be empty.</p>";
+			return;
+		}
+
+		$query = "DELETE FROM SpaceAgency WHERE Name = :name";
+		$stmt = $db_conn->prepare($query);
+		$stmt->bindParam(':name', $name, PDO::PARAM_STR);
+
+		if (!$stmt->execute()) {
+			echo "<p>Error: Invalid input. Check your values.</p>";
+			return;
+		}
+
+		if (function_exists('displayTable')) {
+            displayTable("SpaceAgency");
+        }
+		echo "<p>Deletion successful.</p>";
 	}
 
 
@@ -703,7 +370,7 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
     // Construct the query without regex validation
     $query = "SELECT DISTINCT " . $attributes . " FROM " . $tableName;
-    $stmt = oci_parse($db_conn, $query);
+    $stmt = $db_conn->prepare($query);
 
     if (!$stmt) {
         echo "<p>Error: Invalid input. Check your attribute names and table name.</p>";
@@ -711,7 +378,7 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
     }
 
     // Attempt to execute the query
-    if (!@oci_execute($stmt)) {
+    if (!@$stmt->execute()) {
         $e = oci_error($stmt);
         echo "<p>Error: Invalid input. Check your attribute names and table name.</p>";
         return;
@@ -721,7 +388,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 		echo "Projection successful. Here are your results: ";
     printResult($stmt);
 }
-
 
 
 	function handleGroupRequest()
@@ -743,8 +409,6 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 	}
 
 	function handleNestedRequest()
-
-	function handleNestedRequest()
 	{
         $result = executePlainSQL('SELECT AVG(Exoplanet_discovery_count) FROM (SELECT "Discovery Year" as year, COUNT(*) as Exoplanet_discovery_count FROM Exoplanet_DiscoveredAt GROUP BY "Discovery Year")');
         // $result = executePlainSQL('SELECT "Discovery Year" as year, COUNT(*) as Exoplanet_discovery_count FROM Exoplanet_DiscoveredAt GROUP BY "Discovery Year"'); // intermediate query
@@ -756,28 +420,54 @@ $show_debug_alert_messages = False; // show which methods are being triggered (s
 
 	function displayTable($tableName) {
     global $db_conn;
-
-    // Check if the table exists before attempting to display its content
     if (!checkTableExists($tableName)) {
         echo "<p>Error: The table '{$tableName}' does not exist.</p>";
         return;
     }
-
-    // Proceed with the original logic to display the table
     $query = "SELECT * FROM " . $tableName;
-    $stmt = oci_parse($db_conn, $query);
-    $r = oci_execute($stmt);
-
-    // Assuming successful execution, proceed to fetch and display the results
-		printResult($stmt);
+    $stmt = $db_conn->prepare($query);
+    $stmt->execute();
+    printResult($stmt);
 }
+
+	function handleSelectRequest() {
+		global $db_conn;
+
+		$whereClause = $_GET['Where'];
+		if (empty($whereClause)) {
+			echo "<p>Error: WHERE clause cannot be empty.</p>";
+			return;
+		}
+
+		$query = "SELECT * FROM Exoplanet_DiscoveredAt WHERE " . $whereClause;
+		$stmt = $db_conn->prepare($query);
+
+		if (!$stmt) {
+			echo "<p>Error: Invalid input. Check your WHERE clause.</p>";
+			return;
+		}
+
+		if (!@$stmt->execute()) {
+			$e = oci_error($stmt);
+			echo "<p>Error: Invalid input. Check your WHERE clause.</p>";
+			return;
+		}
+
+		printResult($stmt);
+	}
 
 function checkTableExists($tableName) {
 	global $db_conn;
 
 	// Attempt a query that will fail if the table doesn't exist
-	$query = "SELECT 1 FROM " . $tableName . " WHERE ROWNUM = 1";
-	$stmt = oci_parse($db_conn, $query);
+	$query = "SELECT 1 FROM " . $tableName . " LIMIT 1";
+try {
+    $stmt = $db_conn->prepare($query);
+    $stmt->execute();
+    return true;
+} catch (PDOException $e) {
+    return false;
+}
 
 	if (!$stmt) {
 			// If oci_parse fails, it's a bad sign but doesn't necessarily mean the table doesn't exist
@@ -785,7 +475,7 @@ function checkTableExists($tableName) {
 	}
 
 	// Suppress PHP warnings and attempt to execute the query
-	$r = @oci_execute($stmt);
+	$r = @$stmt->execute();
 
 	if (!$r) {
 			// If execution fails, check the error code for ORA-00942
@@ -798,6 +488,138 @@ function checkTableExists($tableName) {
 
 	// If we reach this point, the table exists
 	return true;
+}
+
+function handleResetRequest() {
+    global $db_conn;
+    $filename = 'sql/sql_ddl.sql';
+
+    if (!file_exists($filename)) {
+        echo "<p>Schema file not found at $filename.</p>";
+        return;
+    }
+
+    $sql = file_get_contents($filename);
+    try {
+        $db_conn->exec($sql);
+        echo "<p>Tables reset successfully.</p>";
+    } catch (PDOException $e) {
+        echo "<p>Error resetting tables: " . htmlspecialchars($e->getMessage()) . "</p>";
+    }
+}
+
+function handleInsertRequest()
+{
+    global $db_conn;
+
+    // Extract POST data
+    $name = $_POST['insName'];
+    $type = $_POST['insType'];
+    $mass = $_POST['insMass'];
+    $radius = $_POST['insRadius'];
+    $discoveryYear = $_POST['insYear'];
+    $lightYears = $_POST['insLight'];
+    $orbitalPeriod = $_POST['insOrb'];
+    $eccentricity = $_POST['insEcc'];
+    $spaceAgencyName = $_POST['insSpace'];
+    $discoveryMethod = $_POST['insDisc'];
+
+    // Identify the first error condition
+    $errorCondition = null;
+    if (!isset($name) || trim($name) === '') {
+        $errorCondition = 'name';
+    } elseif (!isset($mass) || trim($mass) === '') {
+        $errorCondition = 'mass';
+    } elseif (!isset($radius) || trim($radius) === '') {
+        $errorCondition = 'radius';
+    } elseif (!isset($spaceAgencyName) || trim($spaceAgencyName) === '') {
+        $errorCondition = 'spaceAgencyName';
+    }
+
+    // Handle the error condition with a switch statement
+    switch ($errorCondition) {
+        case 'name':
+            echo "<p>Error: Name is required and cannot be null or empty.</p>";
+            return;
+        case 'mass':
+            echo "<p>Error: Mass is required and cannot be null or empty.</p>";
+            return;
+        case 'radius':
+            echo "<p>Error: Radius is required and cannot be null or empty.</p>";
+            return;
+        case 'spaceAgencyName':
+            echo "<p>Error: Space Agency Name is required and cannot be null or empty.</p>";
+            return;
+    }
+
+    // Validate input types
+    if (!is_string($name) || !is_string($type) || !is_numeric($mass) || !is_numeric($radius) || !is_numeric($discoveryYear) || !is_numeric($lightYears) || !is_numeric($orbitalPeriod) || !is_numeric($eccentricity) || !is_string($spaceAgencyName) || !is_string($discoveryMethod)) {
+        echo "<p>Error: Incorrect input types.</p>";
+        return;
+    }
+
+    try {
+        $db_conn->beginTransaction();
+
+        // Check if the Exoplanet name already exists
+        $queryExoplanet = "SELECT Name FROM Exoplanet_DiscoveredAt WHERE Name = :name";
+        $stmtCheckExoplanet = $db_conn->prepare($queryExoplanet);
+        $stmtCheckExoplanet->execute([':name' => $name]);
+        if ($stmtCheckExoplanet->fetch()) {
+            echo "<p>Error: An exoplanet with the name '{$name}' already exists.</p>";
+            $db_conn->rollBack();
+            return;
+        }
+
+        // Ensure the SpaceAgency exists or insert it
+        $querySpaceAgency = "SELECT Name FROM SpaceAgency WHERE Name = :spaceAgencyName";
+        $stmt = $db_conn->prepare($querySpaceAgency);
+        $stmt->execute([':spaceAgencyName' => $spaceAgencyName]);
+        if (!$stmt->fetch()) {
+            $insertSpaceAgency = "INSERT INTO SpaceAgency(Name) VALUES (:spaceAgencyName)";
+            $stmtInsertAgency = $db_conn->prepare($insertSpaceAgency);
+            $stmtInsertAgency->execute([':spaceAgencyName' => $spaceAgencyName]);
+        }
+
+        // Ensure the ExoplanetDimensions exists or insert it
+        $queryDimensions = "SELECT * FROM ExoplanetDimensions WHERE Mass = :mass AND Radius = :radius";
+        $stmtDimensions = $db_conn->prepare($queryDimensions);
+        $stmtDimensions->execute([':mass' => $mass, ':radius' => $radius]);
+        if (!$stmtDimensions->fetch()) {
+            $insertDimensions = "INSERT INTO ExoplanetDimensions(Mass, Radius) VALUES (:mass, :radius)";
+            $stmtInsertDimensions = $db_conn->prepare($insertDimensions);
+            $stmtInsertDimensions->execute([':mass' => $mass, ':radius' => $radius]);
+        }
+
+        // Insert the Exoplanet
+        $insertExoplanet = "INSERT INTO Exoplanet_DiscoveredAt(Name, Type, Mass, Radius, \"Discovery Year\", \"Light Years from Earth\", \"Orbital Period\", Eccentricity, SpaceAgencyName, \"Discovery Method\") 
+                             VALUES (:name, :type, :mass, :radius, :discoveryYear, :lightYears, :orbitalPeriod, :eccentricity, :spaceAgencyName, :discoveryMethod)";
+        $stmtExoplanet = $db_conn->prepare($insertExoplanet);
+        $stmtExoplanet->execute([
+            ':name' => $name,
+            ':type' => $type,
+            ':mass' => $mass,
+            ':radius' => $radius,
+            ':discoveryYear' => $discoveryYear,
+            ':lightYears' => $lightYears,
+            ':orbitalPeriod' => $orbitalPeriod,
+            ':eccentricity' => $eccentricity,
+            ':spaceAgencyName' => $spaceAgencyName,
+            ':discoveryMethod' => $discoveryMethod
+        ]);
+
+        $db_conn->commit();
+
+        // Display the updated table
+        if (function_exists('displayTable')) {
+            displayTable("Exoplanet_DiscoveredAt");
+        }
+        echo "<p>Exoplanet '{$name}' successfully inserted.</p>";
+
+    } catch (PDOException $e) {
+        $db_conn->rollBack();
+        echo "<p>Error inserting exoplanet: " . htmlspecialchars($e->getMessage()) . "</p>";
+    }
 }
 
 	// HANDLE ALL POST ROUTES
@@ -824,7 +646,6 @@ function checkTableExists($tableName) {
 	{
 		if (connectToDB()) {
 			if (array_key_exists('displayTuples', $_GET)) {
-			if (array_key_exists('displayTuples', $_GET)) {
 				handleDisplayRequest();
 			} elseif (array_key_exists('projectionSubmit', $_GET)){
 				handleProjectionRequest();
@@ -833,32 +654,28 @@ function checkTableExists($tableName) {
 			} elseif (array_key_exists('havingTuplesRequest', $_GET)){
 				handleHavingRequest();
 			} elseif (array_key_exists('divisionRequest', $_GET)){ //divisionSubmit
-			} elseif (array_key_exists('divisionRequest', $_GET)){ //divisionSubmit
 				handleDivisionRequest();
 			} elseif (array_key_exists('nestedRequest', $_GET)){
 				handleNestedRequest();
-			} elseif (array_key_exists('nestedRequest', $_GET)){
-				handleNestedRequest();
-			} else if (array_key_exists('selectQueryRequest', $_GET)) {
+			} elseif (array_key_exists('selectQueryRequest', $_GET)) {
 				handleSelectRequest();
-			} else if (array_key_exists('joinQueryRequest', $_GET)) {
-			} else if (array_key_exists('joinQueryRequest', $_GET)) {
+			} elseif (array_key_exists('joinQueryRequest', $_GET)) {
 				handleJoinRequest();
 			} 
-
 			disconnectFromDB();
 		}
 	}
 
 	if (isset($_POST['reset']) || isset($_POST['updateSubmit']) || isset($_POST['insertSubmit']) || isset($_POST['deleteSubmit']) ) {
         handlePOSTRequest();
-    } else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || isset($_GET['groupSubmit']) || isset($_GET['havingSubmit']) || isset($_GET['joinSubmit']) || isset($_GET['selectQuerySubmit']) || isset($_GET['divisionSubmit']) || isset($_GET['nestedSubmit'])) {
-    } else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || isset($_GET['groupSubmit']) || isset($_GET['havingSubmit']) || isset($_GET['joinSubmit']) || isset($_GET['selectQuerySubmit']) || isset($_GET['divisionSubmit']) || isset($_GET['nestedSubmit'])) {
-        handleGETRequest();
+    } else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || isset($_GET['groupSubmit']) || isset($_GET['havingSubmit']) || isset($_GET['joinSubmit']) || isset($_GET['selectQuerySubmit']) || isset($_GET['divisionSubmit']) || isset($_GET['nestedSubmit']))
+     {
+		handleGETRequest();
     }
 
 	// End PHP parsing and send the rest of the HTML content
 	?>
+	
 </body>
 
 </html>
