@@ -75,7 +75,7 @@ require_once("logic/queries.php");
     <hr />
 
     <h2>Display a Table</h2>
-<form method="GET" action="index.ph">
+<form method="GET" action="index.php">
     <input type="hidden" id="displayTuplesRequest" name="displayTuplesRequest">
     <label for="tableNameForDisplay">Choose a table to display:</label><br>
     <select name="tableNameForDisplay" id="tableNameForDisplay" required>
