@@ -8,20 +8,20 @@ require_once("logic/queries.php");
 <html>
 <head>
     <title>Exoplanet Explorer</title>
-	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="stylesheet" type="text/css" href="style.css?v=<?= time() ?>">
 </head>
 <body>
 	<div class="container">
     <h2>Reset</h2>
     <p>If this is your first time running this page, you MUST click reset.</p>
-    <form method="POST" action="exoplanet-explorer.php">
+    <form method="POST" action="index.php">
         <input type="hidden" id="resetTablesRequest" name="resetTablesRequest">
         <p><input type="submit" value="Reset" name="reset"></p>
     </form>
     <hr />
 
     <h2>Insert Values for Exoplanets</h2>
-    <form method="POST" action="exoplanet-explorer.php">
+    <form method="POST" action="index.php">
         <input type="hidden" id="insertQueryRequest" name="insertQueryRequest">
         Name: <input type="text" name="insName" placeholder="e.g. Kepler-22b"> <br /><br />
         Type: <input type="text" name="insType" placeholder="e.g. Gas Giant"> <br /><br />
@@ -38,7 +38,7 @@ require_once("logic/queries.php");
     <hr />
 
     <h2>Delete a Space Agency</h2>
-    <form method="POST" action="exoplanet-explorer.php">
+    <form method="POST" action="index.php">
         <input type="hidden" id="deleteQueryRequest" name="deleteQueryRequest">
         Space Agency Name: <input type="text" name="insName" placeholder="e.g. Canadian Space Agency" required style="width: 200px;"> <br /><br />
         <input type="submit" value="Delete" name="deleteSubmit"></p>
@@ -47,7 +47,7 @@ require_once("logic/queries.php");
 
     <h2>Update Researcher Information</h2>
     <p>Leave blank to retain current value. Case sensitive.</p>
-    <form method="POST" action="exoplanet-explorer.php">
+    <form method="POST" action="index.php">
         <input type="hidden" id="updateQueryRequest" name="updateQueryRequest">
         Researcher ID: <input type="text" name="ID" placeholder="e.g. 2" required> <br /><br />
         New Name: <input type="text" name="newName" placeholder="e.g. Jane Doe"> <br /><br />
@@ -59,7 +59,7 @@ require_once("logic/queries.php");
     <hr />
 
     <h2>Run a SELECT Query</h2>
-    <form method="GET" action="exoplanet-explorer.php">
+    <form method="GET" action="index.php">
         <input type="hidden" id="selectQueryRequest" name="selectQueryRequest">
         WHERE condition: <input type="text" name="Where" placeholder="e.g. Mass = 1.1"> <br><br>
         <input type="submit" value="Submit" name="selectQuerySubmit"></p>
@@ -67,7 +67,7 @@ require_once("logic/queries.php");
     <hr />
 
     <h2>Join Star_BelongsTo and StellarClass</h2>
-    <form method="GET" action="exoplanet-explorer.php">
+    <form method="GET" action="index.php">
         <input type="hidden" id="joinQueryRequest" name="joinQueryRequest">
         Stellar Class (filter): <input type="text" name="StellarClassClass" placeholder="e.g. G"> <br><br>
         <input type="submit" value="Join" name="joinSubmit"></p>
@@ -75,7 +75,7 @@ require_once("logic/queries.php");
     <hr />
 
     <h2>Display a Table</h2>
-<form method="GET" action="exoplanet-explorer.php">
+<form method="GET" action="index.ph">
     <input type="hidden" id="displayTuplesRequest" name="displayTuplesRequest">
     <label for="tableNameForDisplay">Choose a table to display:</label><br>
     <select name="tableNameForDisplay" id="tableNameForDisplay" required>
@@ -106,7 +106,7 @@ require_once("logic/queries.php");
 
 
     <h2>Projection Query</h2>
-    <form method="GET" action="exoplanet-explorer.php">
+    <form method="GET" action="index.php">
         <input type="hidden" id="projectionRequest" name="projectionRequest">
         Table Name: <input type="text" name="tableNameForDisplay" placeholder="e.g. Exoplanet_DiscoveredAt" required style="width: 200px;"><br><br>
         Attributes (comma-separated): <input type="text" name="attributes" placeholder="e.g. Name, Type" required> <br><br>
@@ -115,28 +115,28 @@ require_once("logic/queries.php");
     <hr />
 
     <h2>Group by Space Program</h2>
-    <form method="GET" action="exoplanet-explorer.php">
+    <form method="GET" action="index.php">
         <input type="hidden" id="groupTuplesRequest" name="groupTuplesRequest">
         <input type="submit" value="Submit" name="groupSubmit"></p>
     </form>
     <hr />
 
     <h2>HAVING: Stellar Classes with More Than 2 Stars</h2>
-    <form method="GET" action="exoplanet-explorer.php">
+    <form method="GET" action="index.php">
         <input type="hidden" id="havingTuplesRequest" name="havingTuplesRequest">
         <input type="submit" value="Submit" name="havingSubmit"></p>
     </form>
     <hr />
 
     <h2>DIVISION: Galaxies with All Stars</h2>
-    <form method="GET" action="exoplanet-explorer.php">
+    <form method="GET" action="index.php">
         <input type="hidden" id="divisionRequest" name="divisionRequest">
         <input type="submit" value="Submit" name="divisionSubmit"></p>
     </form>
     <hr />
 
     <h2>NESTED AGGREGATION: Average Exoplanets per Year</h2>
-    <form method="GET" action="exoplanet-explorer.php">
+    <form method="GET" action="index.php">
         <input type="hidden" id="nestedRequest" name="nestedRequest">
         <input type="submit" value="Submit" name="nestedSubmit"></p>
     </form>

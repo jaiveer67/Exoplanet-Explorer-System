@@ -14,4 +14,5 @@ WORKDIR /app
 EXPOSE 10000
 
 # Start the PHP server
-CMD ["php", "-S", "0.0.0.0:10000", "exoplanet-explorer.php"]
+CMD ["php", "-S", "0.0.0.0:10000", "-t", "."]
+

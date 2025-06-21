@@ -89,7 +89,7 @@ It simulates a real-world scientific database supporting complex queries, data e
 1. Clone this repo  
 2. Set up a PHP server (e.g. using XAMPP or built-in PHP dev server)  
 3. Ensure SQLite is enabled and database file is correctly referenced  
-4. Run `exoplanet-explorer.php` in your browser  
+4. Run `index.php` in your browser  
 
 ---
 
