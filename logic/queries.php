@@ -3,6 +3,7 @@ require_once 'helpers.php';
 
 	function handleJoinRequest()
 	{
+        echo "<div class='results'>";
 		global $db_conn;
 
 		$stellarClass = $_GET['StellarClassClass'];
@@ -16,10 +17,12 @@ require_once 'helpers.php';
 		$result = executePlainSQL("SELECT * FROM Star_BelongsTo, StellarClass " . $whereClause);
 		echo "Join successful. Here are the results: ";
 		printResult($result);
+
 	}
 
 	function handleUpdateRequest()
 	{
+        echo "<div class='results'>";
 		global $db_conn;
 
 		$id = $_POST['ID'];
@@ -64,10 +67,12 @@ require_once 'helpers.php';
             displayTable("Researcher_WorksAt");
         }
 		echo "<p>Update successful.</p>";
+        echo "</div>";
 	}
 
 	function handleDeleteRequest()
 	{
+        echo "<div class='results'>";
 		global $db_conn;
 
 		$name = $_POST['insName'];
@@ -90,7 +95,8 @@ require_once 'helpers.php';
             displayTable("SpaceAgency");
         }
 		echo "<p>Deletion successful.</p>";
-	}
+        echo "</div>";
+    }
 
 
 	function handleDisplayRequest()
@@ -100,6 +106,7 @@ require_once 'helpers.php';
 
 	function handleProjectionRequest()
 {
+    echo "<div class='results'>";
     global $db_conn;
 
     $attributes = $_GET['attributes'];
@@ -130,39 +137,48 @@ require_once 'helpers.php';
     // If the query executes successfully, print the results
 		echo "Projection successful. Here are your results: ";
     printResult($stmt);
+    echo "</div>";
 }
 
 
 	function handleGroupRequest()
     {
+        echo "<div class='results'>";
         $result = executePlainSQL("SELECT SpaceProgramName, COUNT(*) AS NumMissions FROM Mission GROUP BY SpaceProgramName");
 		printResult($result);
+        echo "</div>";
     }
 
 	function handleHavingRequest()
 	{
+        echo "<div class='results'>";
 		$result = executePlainSQL("SELECT sc.Class, COUNT(*) AS NumStars FROM StellarClass sc JOIN Star_BelongsTo sb ON sc.Class = sb.StellarClassClass GROUP BY sc.Class HAVING COUNT(*) >= 2");
         printResult($result);
+        echo "</div>";
 	}
 
 	function handleDivisionRequest()
 	{
+        echo "<div class='results'>";
 		$result = executePlainSQL("SELECT g.Name AS GalaxyName FROM Galaxy g WHERE NOT EXISTS (SELECT s.Name FROM Star_BelongsTo s WHERE NOT EXISTS (SELECT * FROM Star_BelongsTo sb WHERE sb.GalaxyName = g.Name AND sb.Name = s.Name))");
         printResult($result);
+        echo "</div>";
 	}
 
 	function handleNestedRequest()
 	{
+        echo "<div class='results'>";
         $result = executePlainSQL('SELECT AVG(Exoplanet_discovery_count) FROM (SELECT "Discovery Year" as year, COUNT(*) as Exoplanet_discovery_count FROM Exoplanet_DiscoveredAt GROUP BY "Discovery Year")');
         // $result = executePlainSQL('SELECT "Discovery Year" as year, COUNT(*) as Exoplanet_discovery_count FROM Exoplanet_DiscoveredAt GROUP BY "Discovery Year"'); // intermediate query
         $result = executePlainSQL('SELECT AVG(Exoplanet_discovery_count) FROM (SELECT "Discovery Year" as year, COUNT(*) as Exoplanet_discovery_count FROM Exoplanet_DiscoveredAt GROUP BY "Discovery Year")');
         // $result = executePlainSQL('SELECT "Discovery Year" as year, COUNT(*) as Exoplanet_discovery_count FROM Exoplanet_DiscoveredAt GROUP BY "Discovery Year"'); // intermediate query
 		printResult($result);
+        echo "</div>";
 	}
 
 	function handleSelectRequest() {
+        echo "<div class='results'>";
 		global $db_conn;
-
 		$whereClause = $_GET['Where'];
 		if (empty($whereClause)) {
 			echo "<p>Error: WHERE clause cannot be empty.</p>";
@@ -184,6 +200,7 @@ require_once 'helpers.php';
 		}
 
 		printResult($stmt);
+        echo "</div>";
 	}
 
 function handleResetRequest() {
@@ -196,16 +213,19 @@ function handleResetRequest() {
     }
 
     $sql = file_get_contents($filename);
+    echo "<div class='results'>";
     try {
         $db_conn->exec($sql);
         echo "<p>Tables reset successfully.</p>";
     } catch (PDOException $e) {
         echo "<p>Error resetting tables: " . htmlspecialchars($e->getMessage()) . "</p>";
     }
+    echo "</div>";
 }
 
 function handleInsertRequest()
 {
+    echo "<div class='results'>";
     global $db_conn;
 
     // Extract POST data
@@ -316,6 +336,7 @@ function handleInsertRequest()
         $db_conn->rollBack();
         echo "<p>Error inserting exoplanet: " . htmlspecialchars($e->getMessage()) . "</p>";
     }
+    echo "</div>";
 }
 
 ?>

@@ -1,12 +1,19 @@
 <?php
     require_once 'queries.php';
-    require_once 'helpers.php';
     require_once 'connection.php';
 
     // Debugging messages
     $show_debug_alert_messages = false;
 
 // HANDLE ALL POST ROUTES
+
+if (isset($_POST['reset']) || isset($_POST['updateSubmit']) || isset($_POST['insertSubmit']) || isset($_POST['deleteSubmit']) ) {
+        handlePOSTRequest();
+    } else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || isset($_GET['groupSubmit']) || isset($_GET['havingSubmit']) || isset($_GET['joinSubmit']) || isset($_GET['selectQuerySubmit']) || isset($_GET['divisionSubmit']) || isset($_GET['nestedSubmit']))
+     {
+		handleGETRequest();
+    }
+    
 	function handlePOSTRequest()
 	{
 		if (connectToDB()) {
@@ -47,11 +54,4 @@
 			disconnectFromDB();
 		}
 	}
-
-	if (isset($_POST['reset']) || isset($_POST['updateSubmit']) || isset($_POST['insertSubmit']) || isset($_POST['deleteSubmit']) ) {
-        handlePOSTRequest();
-    } else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || isset($_GET['groupSubmit']) || isset($_GET['havingSubmit']) || isset($_GET['joinSubmit']) || isset($_GET['selectQuerySubmit']) || isset($_GET['divisionSubmit']) || isset($_GET['nestedSubmit']))
-     {
-		handleGETRequest();
-    }
 ?>

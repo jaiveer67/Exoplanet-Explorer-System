@@ -1,0 +1,62 @@
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+body {
+  background-image: url('https://www.transparenttextures.com/patterns/stardust.png'), linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
+  background-size: cover;
+  color: #fff;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.form-box {
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 15px;
+  margin: 30px 0;
+  border-radius: 8px;
+  border: 1px solid #444;
+}
+
+h2 {
+  color: #ffdd57;
+  text-shadow: 1px 1px 3px #000;
+}
+
+input, select, textarea {
+  background-color: #222;
+  color: #eee;
+  border: 1px solid #666;
+  padding: 6px;
+}
+
+
+hr {
+  border-color: #444;
+}
+
+.results {
+  text-align: center;
+  margin: 20px auto;
+  width: fit-content;
+  max-width: 100%;
+  padding: 10px 20px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 30px;
+}
+
+.results table {
+  margin: 0 auto;
+  border-collapse: collapse;
+  color: #fff;
+}
+
+.results th, .results td {
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+}
+

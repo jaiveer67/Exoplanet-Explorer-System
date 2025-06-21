@@ -24,6 +24,7 @@
         }
 
 	function printResult($stmt) {
+        echo "<div class='results'>";
 		if (!$stmt) {
 			echo "<p>No results.</p>";
 			return;
@@ -46,6 +47,7 @@
 			echo "</tr>";
 		}
 		echo "</table>";
+        echo "</div>";
 	}
 
     function displayTable($tableName) {
@@ -54,10 +56,12 @@
         echo "<p>Error: The table '{$tableName}' does not exist.</p>";
         return;
     }
+    echo "<div class='results'>";
     $query = "SELECT * FROM " . $tableName;
     $stmt = $db_conn->prepare($query);
     $stmt->execute();
     printResult($stmt);
+    echo "</div>";
 }
 
     function checkTableExists($tableName) {
