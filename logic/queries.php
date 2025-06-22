@@ -1,342 +1,288 @@
 <?php
 require_once 'helpers.php';
 
-	function handleJoinRequest()
-	{
-        echo "<div class='results'>";
-		global $db_conn;
-
-		$stellarClass = $_GET['StellarClassClass'];
-
-		if (!empty($stellarClass)) {
-            $whereClause = "WHERE Star_BelongsTo.StellarClassClass = StellarClass.Class AND Star_BelongsTo.StellarClassClass = '" . $stellarClass . "'";
-        } else {
-            $whereClause = "";
-        }
-		
-		$result = executePlainSQL("SELECT * FROM Star_BelongsTo, StellarClass " . $whereClause);
-		echo "Join successful. Here are the results: ";
-		printResult($result);
-
-	}
-
-	function handleUpdateRequest()
-	{
-        echo "<div class='results'>";
-		global $db_conn;
-
-		$id = $_POST['ID'];
-		$newName = $_POST['newName'];
-		$newAffiliation = $_POST['newAffiliation'];
-		$newEmailAddress = $_POST['newEmailAddress'];
-		$newSpaceAgencyName = $_POST['newSpaceAgencyName'];
-
-		if (empty($id)) {
-			echo "<p>Error: ID cannot be empty.</p>";
-			return;
-		}
-
-		$setClause = [];
-		if (!empty($newName)) {
-			$setClause[] = "Name = '" . $newName . "'";
-		}
-		if (!empty($newAffiliation)) {
-			$setClause[] = "Affiliation = '" . $newAffiliation . "'";
-		}
-		if (!empty($newEmailAddress)) {
-			$setClause[] = "EmailAddress = '" . $newEmailAddress . "'";
-		}
-		if (!empty($newSpaceAgencyName)) {
-			$setClause[] = "SpaceAgencyName = '" . $newSpaceAgencyName . "'";
-		}
-
-		if (empty($setClause)) {
-			echo "<p>Error: No fields to update.</p>";
-			return;
-		}
-
-		$query = "UPDATE Researcher_WorksAt SET " . implode(", ", $setClause) . " WHERE ID = :id";
-		$stmt = $db_conn->prepare($query);
-		$stmt->bindParam(':id', $id, PDO::PARAM_INT);
-
-		if (!$stmt->execute()) {
-			echo "<p>Error: Invalid input. Check your values.</p>";
-			return;
-		}
-		if (function_exists('displayTable')) {
-            displayTable("Researcher_WorksAt");
-        }
-		echo "<p>Update successful.</p>";
-        echo "</div>";
-	}
-
-	function handleDeleteRequest()
-	{
-        echo "<div class='results'>";
-		global $db_conn;
-
-		$name = $_POST['insName'];
-
-		if (empty($name)) {
-			echo "<p>Error: Name cannot be empty.</p>";
-			return;
-		}
-
-		$query = "DELETE FROM SpaceAgency WHERE Name = :name";
-		$stmt = $db_conn->prepare($query);
-		$stmt->bindParam(':name', $name, PDO::PARAM_STR);
-
-		if (!$stmt->execute()) {
-			echo "<p>Error: Invalid input. Check your values.</p>";
-			return;
-		}
-
-		if (function_exists('displayTable')) {
-            displayTable("SpaceAgency");
-        }
-		echo "<p>Deletion successful.</p>";
-        echo "</div>";
+	function handleJoinRequest($db, $stellarClass) {
+    if (!empty($stellarClass)) {
+        $whereClause = "WHERE Star_BelongsTo.StellarClassClass = StellarClass.Class AND Star_BelongsTo.StellarClassClass = :class";
+    } else {
+        $whereClause = "";
     }
 
+    $sql = "SELECT * FROM Star_BelongsTo, StellarClass $whereClause";
+    $stmt = $db->prepare($sql);
 
-	function handleDisplayRequest()
-	{
-		displayTable($_GET["tableNameForDisplay"]);
-	}
-
-	function handleProjectionRequest()
-{
-    echo "<div class='results'>";
-    global $db_conn;
-
-    $attributes = $_GET['attributes'];
-    $tableName = $_GET['tableNameForDisplay'];
-
-		// Check if the table exists before attempting to display its content
-    if (!checkTableExists($tableName)) {
-			echo "<p>Error: The table '{$tableName}' does not exist.</p>";
-			return;
-	}
-
-    // Construct the query without regex validation
-    $query = "SELECT DISTINCT " . $attributes . " FROM " . $tableName;
-    $stmt = $db_conn->prepare($query);
-
-    if (!$stmt) {
-        echo "<p>Error: Invalid input. Check your attribute names and table name.</p>";
-        return;
+    if (!empty($stellarClass)) {
+        $stmt->bindValue(':class', $stellarClass);
     }
 
-    // Attempt to execute the query
-    if (!@$stmt->execute()) {
-        $e = oci_error($stmt);
-        echo "<p>Error: Invalid input. Check your attribute names and table name.</p>";
-        return;
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+	function handleUpdateRequest($db, $post) {
+    $id = $post['ID'] ?? '';
+    $newName = $post['newName'] ?? '';
+    $newAffiliation = $post['newAffiliation'] ?? '';
+    $newEmailAddress = $post['newEmailAddress'] ?? '';
+    $newSpaceAgencyName = $post['newSpaceAgencyName'] ?? '';
+
+    if (empty($id)) {
+        return ["error" => "ID cannot be empty."];
     }
 
-    // If the query executes successfully, print the results
-		echo "Projection successful. Here are your results: ";
-    printResult($stmt);
-    echo "</div>";
+    $setClause = [];
+    $params = [];
+
+    if (!empty($newName)) {
+        $setClause[] = "Name = :name";
+        $params[':name'] = $newName;
+    }
+    if (!empty($newAffiliation)) {
+        $setClause[] = "Affiliation = :affiliation";
+        $params[':affiliation'] = $newAffiliation;
+    }
+    if (!empty($newEmailAddress)) {
+        $setClause[] = "EmailAddress = :email";
+        $params[':email'] = $newEmailAddress;
+    }
+    if (!empty($newSpaceAgencyName)) {
+        $setClause[] = "SpaceAgencyName = :agency";
+        $params[':agency'] = $newSpaceAgencyName;
+    }
+
+    if (empty($setClause)) {
+        return ["error" => "No fields to update."];
+    }
+
+    $query = "UPDATE Researcher_WorksAt SET " . implode(", ", $setClause) . " WHERE ID = :id";
+    $stmt = $db->prepare($query);
+    $params[':id'] = $id;
+
+    if (!$stmt->execute($params)) {
+        return ["error" => "Invalid input. Check your values."];
+    }
+
+    // Optionally return updated table
+    $res = $db->query("SELECT * FROM Researcher_WorksAt")->fetchAll(PDO::FETCH_ASSOC);
+    return ["message" => "Update successful.", "results" => $res];
 }
 
 
-	function handleGroupRequest()
-    {
-        echo "<div class='results'>";
-        $result = executePlainSQL("SELECT SpaceProgramName, COUNT(*) AS NumMissions FROM Mission GROUP BY SpaceProgramName");
-		printResult($result);
-        echo "</div>";
+	function handleDeleteRequest($db, $post) {
+    $name = $post['insName'] ?? '';
+
+    if (empty($name)) {
+        return ["error" => "Name cannot be empty."];
     }
 
-	function handleHavingRequest()
-	{
-        echo "<div class='results'>";
-		$result = executePlainSQL("SELECT sc.Class, COUNT(*) AS NumStars FROM StellarClass sc JOIN Star_BelongsTo sb ON sc.Class = sb.StellarClassClass GROUP BY sc.Class HAVING COUNT(*) >= 2");
-        printResult($result);
-        echo "</div>";
-	}
+    $stmt = $db->prepare("DELETE FROM SpaceAgency WHERE Name = :name");
+    $stmt->bindParam(':name', $name);
 
-	function handleDivisionRequest()
-	{
-        echo "<div class='results'>";
-		$result = executePlainSQL("SELECT g.Name AS GalaxyName FROM Galaxy g WHERE NOT EXISTS (SELECT s.Name FROM Star_BelongsTo s WHERE NOT EXISTS (SELECT * FROM Star_BelongsTo sb WHERE sb.GalaxyName = g.Name AND sb.Name = s.Name))");
-        printResult($result);
-        echo "</div>";
-	}
+    if (!$stmt->execute()) {
+        return ["error" => "Invalid input. Check your values."];
+    }
 
-	function handleNestedRequest()
-	{
-        echo "<div class='results'>";
-        $result = executePlainSQL('SELECT AVG(Exoplanet_discovery_count) FROM (SELECT "Discovery Year" as year, COUNT(*) as Exoplanet_discovery_count FROM Exoplanet_DiscoveredAt GROUP BY "Discovery Year")');
-        // $result = executePlainSQL('SELECT "Discovery Year" as year, COUNT(*) as Exoplanet_discovery_count FROM Exoplanet_DiscoveredAt GROUP BY "Discovery Year"'); // intermediate query
-        $result = executePlainSQL('SELECT AVG(Exoplanet_discovery_count) FROM (SELECT "Discovery Year" as year, COUNT(*) as Exoplanet_discovery_count FROM Exoplanet_DiscoveredAt GROUP BY "Discovery Year")');
-        // $result = executePlainSQL('SELECT "Discovery Year" as year, COUNT(*) as Exoplanet_discovery_count FROM Exoplanet_DiscoveredAt GROUP BY "Discovery Year"'); // intermediate query
-		printResult($result);
-        echo "</div>";
-	}
+    // Optionally return updated table
+    $res = $db->query("SELECT * FROM SpaceAgency")->fetchAll(PDO::FETCH_ASSOC);
+    return ["message" => "Deletion successful.", "results" => $res];
+}
 
-	function handleSelectRequest() {
-        echo "<div class='results'>";
-		global $db_conn;
-		$whereClause = $_GET['Where'];
-		if (empty($whereClause)) {
-			echo "<p>Error: WHERE clause cannot be empty.</p>";
-			return;
-		}
+	function handleDisplayRequest($db, $tableName) {
+    // Check if table exists
+    $stmt = $db->prepare("SELECT name FROM sqlite_master WHERE type='table' AND name = :name");
+    $stmt->bindValue(":name", $tableName);
+    $stmt->execute();
+    $exists = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$exists) {
+        return ["error" => "The table '{$tableName}' does not exist."];
+    }
 
-		$query = "SELECT * FROM Exoplanet_DiscoveredAt WHERE " . $whereClause;
-		$stmt = $db_conn->prepare($query);
+    $res = $db->query("SELECT * FROM $tableName")->fetchAll(PDO::FETCH_ASSOC);
+    return ["message" => "Table '{$tableName}' displayed successfully.", "results" => $res];
+}
 
-		if (!$stmt) {
-			echo "<p>Error: Invalid input. Check your WHERE clause.</p>";
-			return;
-		}
 
-		if (!@$stmt->execute()) {
-			$e = oci_error($stmt);
-			echo "<p>Error: Invalid input. Check your WHERE clause.</p>";
-			return;
-		}
+	function handleProjectionRequest($db, $attributes, $tableName) {
+    // Check if table exists
+    $stmt = $db->prepare("SELECT name FROM sqlite_master WHERE type='table' AND name = :name");
+    $stmt->bindValue(":name", $tableName);
+    $stmt->execute();
+    if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
+        return ["error" => "The table '{$tableName}' does not exist."];
+    }
 
-		printResult($stmt);
-        echo "</div>";
-	}
+    // Sanitize and build projection query
+    $safeAttributes = implode(", ", array_map('trim', explode(",", $attributes)));
 
-function handleResetRequest() {
-    global $db_conn;
-    $filename = 'sql/sql_ddl.sql';
+    $query = "SELECT DISTINCT $safeAttributes FROM $tableName";
+    try {
+        $stmt = $db->query($query);
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return ["message" => "Projection successful.", "results" => $res];
+    } catch (Exception $e) {
+        return ["error" => "Invalid input. Check your attribute names and table name."];
+    }
+}
+
+	function handleGroupRequest($db) {
+    $query = "SELECT SpaceProgramName, COUNT(*) AS NumMissions FROM Mission GROUP BY SpaceProgramName";
+    $res = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
+    return ["message" => "Grouped by SpaceProgramName.", "results" => $res];
+}
+
+
+	function handleHavingRequest($db) {
+    $query = "SELECT sc.Class, COUNT(*) AS NumStars FROM StellarClass sc 
+              JOIN Star_BelongsTo sb ON sc.Class = sb.StellarClassClass 
+              GROUP BY sc.Class 
+              HAVING COUNT(*) >= 2";
+
+    $res = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
+    return ["message" => "HAVING COUNT >= 2 executed.", "results" => $res];
+}
+
+
+	function handleDivisionRequest($db) {
+    $query = "SELECT g.Name AS GalaxyName 
+              FROM Galaxy g 
+              WHERE NOT EXISTS (
+                  SELECT s.Name 
+                  FROM Star_BelongsTo s 
+                  WHERE NOT EXISTS (
+                      SELECT * 
+                      FROM Star_BelongsTo sb 
+                      WHERE sb.GalaxyName = g.Name AND sb.Name = s.Name
+                  )
+              )";
+
+    try {
+        $res = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
+        return ["message" => "Division query successful.", "results" => $res];
+    } catch (PDOException $e) {
+        return ["error" => "Error executing division query: " . $e->getMessage()];
+    }
+}
+
+
+	function handleNestedRequest($db) {
+    $query = 'SELECT AVG(Exoplanet_discovery_count) AS AverageDiscoveries 
+              FROM (
+                  SELECT "Discovery Year" as year, COUNT(*) as Exoplanet_discovery_count 
+                  FROM Exoplanet_DiscoveredAt 
+                  GROUP BY "Discovery Year"
+              )';
+
+    try {
+        $res = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
+        return ["message" => "Nested aggregation query successful.", "results" => $res];
+    } catch (PDOException $e) {
+        return ["error" => "Error executing nested query: " . $e->getMessage()];
+    }
+}
+
+
+	function handleSelectRequest($db, $whereClause) {
+    if (empty($whereClause)) {
+        return ["error" => "WHERE clause cannot be empty."];
+    }
+
+    $query = "SELECT * FROM Exoplanet_DiscoveredAt WHERE $whereClause";
+
+    try {
+        $res = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
+        return ["message" => "Conditional SELECT successful.", "results" => $res];
+    } catch (PDOException $e) {
+        return ["error" => "Error in WHERE clause: " . $e->getMessage()];
+    }
+}
+
+
+function handleResetRequest($db) {
+    $filename = __DIR__ . '/../sql/sql_ddl.sql';
 
     if (!file_exists($filename)) {
-        echo "<p>Schema file not found at $filename.</p>";
-        return;
+        return ["error" => "Schema file not found at $filename."];
     }
 
     $sql = file_get_contents($filename);
-    echo "<div class='results'>";
     try {
-        $db_conn->exec($sql);
-        echo "<p>Tables reset successfully.</p>";
+        $db->exec($sql);
+        return ["message" => "Tables reset successfully."];
     } catch (PDOException $e) {
-        echo "<p>Error resetting tables: " . htmlspecialchars($e->getMessage()) . "</p>";
+        return ["error" => "Error resetting tables: " . $e->getMessage()];
     }
-    echo "</div>";
 }
 
-function handleInsertRequest()
-{
-    echo "<div class='results'>";
-    global $db_conn;
 
-    // Extract POST data
-    $name = $_POST['insName'];
-    $type = $_POST['insType'];
-    $mass = $_POST['insMass'];
-    $radius = $_POST['insRadius'];
-    $discoveryYear = $_POST['insYear'];
-    $lightYears = $_POST['insLight'];
-    $orbitalPeriod = $_POST['insOrb'];
-    $eccentricity = $_POST['insEcc'];
-    $spaceAgencyName = $_POST['insSpace'];
-    $discoveryMethod = $_POST['insDisc'];
-
-    // Identify the first error condition
-    $errorCondition = null;
-    if (!isset($name) || trim($name) === '') {
-        $errorCondition = 'name';
-    } elseif (!isset($mass) || trim($mass) === '') {
-        $errorCondition = 'mass';
-    } elseif (!isset($radius) || trim($radius) === '') {
-        $errorCondition = 'radius';
-    } elseif (!isset($spaceAgencyName) || trim($spaceAgencyName) === '') {
-        $errorCondition = 'spaceAgencyName';
+function handleInsertRequest($db, $post) {
+    $requiredFields = ['insName', 'insMass', 'insRadius', 'insSpace'];
+    foreach ($requiredFields as $field) {
+        if (empty($post[$field])) {
+            return ["error" => ucfirst($field) . " is required."];
+        }
     }
 
-    // Handle the error condition with a switch statement
-    switch ($errorCondition) {
-        case 'name':
-            echo "<p>Error: Name is required and cannot be null or empty.</p>";
-            return;
-        case 'mass':
-            echo "<p>Error: Mass is required and cannot be null or empty.</p>";
-            return;
-        case 'radius':
-            echo "<p>Error: Radius is required and cannot be null or empty.</p>";
-            return;
-        case 'spaceAgencyName':
-            echo "<p>Error: Space Agency Name is required and cannot be null or empty.</p>";
-            return;
-    }
+    extract($post); // safely assuming names are unique keys
 
-    // Validate input types
-    if (!is_string($name) || !is_string($type) || !is_numeric($mass) || !is_numeric($radius) || !is_numeric($discoveryYear) || !is_numeric($lightYears) || !is_numeric($orbitalPeriod) || !is_numeric($eccentricity) || !is_string($spaceAgencyName) || !is_string($discoveryMethod)) {
-        echo "<p>Error: Incorrect input types.</p>";
-        return;
+    // Validate types
+    if (!is_numeric($insMass) || !is_numeric($insRadius)) {
+        return ["error" => "Mass and Radius must be numeric."];
     }
 
     try {
-        $db_conn->beginTransaction();
+        $db->beginTransaction();
 
-        // Check if the Exoplanet name already exists
-        $queryExoplanet = "SELECT Name FROM Exoplanet_DiscoveredAt WHERE Name = :name";
-        $stmtCheckExoplanet = $db_conn->prepare($queryExoplanet);
-        $stmtCheckExoplanet->execute([':name' => $name]);
-        if ($stmtCheckExoplanet->fetch()) {
-            echo "<p>Error: An exoplanet with the name '{$name}' already exists.</p>";
-            $db_conn->rollBack();
-            return;
+        // Check if planet already exists
+        $stmt = $db->prepare("SELECT Name FROM Exoplanet_DiscoveredAt WHERE Name = :name");
+        $stmt->execute([':name' => $insName]);
+        if ($stmt->fetch()) {
+            $db->rollBack();
+            return ["error" => "An exoplanet named '{$insName}' already exists."];
         }
 
-        // Ensure the SpaceAgency exists or insert it
-        $querySpaceAgency = "SELECT Name FROM SpaceAgency WHERE Name = :spaceAgencyName";
-        $stmt = $db_conn->prepare($querySpaceAgency);
-        $stmt->execute([':spaceAgencyName' => $spaceAgencyName]);
+        // Insert SpaceAgency if not exists
+        $stmt = $db->prepare("SELECT Name FROM SpaceAgency WHERE Name = :agency");
+        $stmt->execute([':agency' => $insSpace]);
         if (!$stmt->fetch()) {
-            $insertSpaceAgency = "INSERT INTO SpaceAgency(Name) VALUES (:spaceAgencyName)";
-            $stmtInsertAgency = $db_conn->prepare($insertSpaceAgency);
-            $stmtInsertAgency->execute([':spaceAgencyName' => $spaceAgencyName]);
+            $stmt = $db->prepare("INSERT INTO SpaceAgency(Name) VALUES (:agency)");
+            $stmt->execute([':agency' => $insSpace]);
         }
 
-        // Ensure the ExoplanetDimensions exists or insert it
-        $queryDimensions = "SELECT * FROM ExoplanetDimensions WHERE Mass = :mass AND Radius = :radius";
-        $stmtDimensions = $db_conn->prepare($queryDimensions);
-        $stmtDimensions->execute([':mass' => $mass, ':radius' => $radius]);
-        if (!$stmtDimensions->fetch()) {
-            $insertDimensions = "INSERT INTO ExoplanetDimensions(Mass, Radius) VALUES (:mass, :radius)";
-            $stmtInsertDimensions = $db_conn->prepare($insertDimensions);
-            $stmtInsertDimensions->execute([':mass' => $mass, ':radius' => $radius]);
+        // Insert ExoplanetDimensions if not exists
+        $stmt = $db->prepare("SELECT * FROM ExoplanetDimensions WHERE Mass = :mass AND Radius = :radius");
+        $stmt->execute([':mass' => $insMass, ':radius' => $insRadius]);
+        if (!$stmt->fetch()) {
+            $stmt = $db->prepare("INSERT INTO ExoplanetDimensions(Mass, Radius) VALUES (:mass, :radius)");
+            $stmt->execute([':mass' => $insMass, ':radius' => $insRadius]);
         }
 
-        // Insert the Exoplanet
-        $insertExoplanet = "INSERT INTO Exoplanet_DiscoveredAt(Name, Type, Mass, Radius, \"Discovery Year\", \"Light Years from Earth\", \"Orbital Period\", Eccentricity, SpaceAgencyName, \"Discovery Method\") 
-                             VALUES (:name, :type, :mass, :radius, :discoveryYear, :lightYears, :orbitalPeriod, :eccentricity, :spaceAgencyName, :discoveryMethod)";
-        $stmtExoplanet = $db_conn->prepare($insertExoplanet);
-        $stmtExoplanet->execute([
-            ':name' => $name,
-            ':type' => $type,
-            ':mass' => $mass,
-            ':radius' => $radius,
-            ':discoveryYear' => $discoveryYear,
-            ':lightYears' => $lightYears,
-            ':orbitalPeriod' => $orbitalPeriod,
-            ':eccentricity' => $eccentricity,
-            ':spaceAgencyName' => $spaceAgencyName,
-            ':discoveryMethod' => $discoveryMethod
+        // Insert Exoplanet
+        $stmt = $db->prepare(
+            'INSERT INTO Exoplanet_DiscoveredAt(Name, Type, Mass, Radius, "Discovery Year", "Light Years from Earth", "Orbital Period", Eccentricity, SpaceAgencyName, "Discovery Method") 
+             VALUES (:name, :type, :mass, :radius, :year, :light, :orb, :ecc, :agency, :method)'
+        );
+        $stmt->execute([
+            ':name' => $insName,
+            ':type' => $insType,
+            ':mass' => $insMass,
+            ':radius' => $insRadius,
+            ':year' => $insYear,
+            ':light' => $insLight,
+            ':orb' => $insOrb,
+            ':ecc' => $insEcc,
+            ':agency' => $insSpace,
+            ':method' => $insDisc
         ]);
 
-        $db_conn->commit();
+        $db->commit();
 
-        // Display the updated table
-        if (function_exists('displayTable')) {
-            displayTable("Exoplanet_DiscoveredAt");
-        }
-        echo "<p>Exoplanet '{$name}' successfully inserted.</p>";
+        $res = $db->query("SELECT * FROM Exoplanet_DiscoveredAt")->fetchAll(PDO::FETCH_ASSOC);
+        return ["message" => "Exoplanet '{$insName}' inserted successfully.", "results" => $res];
 
     } catch (PDOException $e) {
-        $db_conn->rollBack();
-        echo "<p>Error inserting exoplanet: " . htmlspecialchars($e->getMessage()) . "</p>";
+        $db->rollBack();
+        return ["error" => "Insertion failed: " . $e->getMessage()];
     }
-    echo "</div>";
 }
 
 ?>

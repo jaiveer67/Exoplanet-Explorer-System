@@ -1,8 +1,8 @@
 <?php
 require_once("logic/connection.php");
 require_once("logic/helpers.php");
-require_once("logic/handlers.php");
 require_once("logic/queries.php");
+require_once("logic/handlers.php");
 ?>
 
 <html>
@@ -12,6 +12,30 @@ require_once("logic/queries.php");
 </head>
 <body>
 	<div class="container">
+<?php if (
+    isset($_SESSION['results']) || 
+    isset($_SESSION['message']) || 
+    isset($_SESSION['error'])
+): ?>
+    <div class="results">
+        <?php if (isset($_SESSION['error'])): ?>
+            <div class="message error"><?= htmlspecialchars($_SESSION['error']) ?></div>
+            <?php unset($_SESSION['error']); ?>
+        <?php elseif (isset($_SESSION['message'])): ?>
+            <div class="message success"><?= htmlspecialchars($_SESSION['message']) ?></div>
+            <?php unset($_SESSION['message']); ?>
+        <?php endif; ?>
+
+        <?php
+        if (isset($_SESSION['results']) && is_array($_SESSION['results']) && count($_SESSION['results']) > 0) {
+            echo printResultArray($_SESSION['results']);
+            unset($_SESSION['results']);
+        }
+        ?>
+    </div>
+<?php endif; ?>
+
+
     <h2>Reset</h2>
     <p>If this is your first time running this page, you MUST click reset.</p>
     <form method="POST" action="index.php">
@@ -40,7 +64,7 @@ require_once("logic/queries.php");
     <h2>Delete a Space Agency</h2>
     <form method="POST" action="index.php">
         <input type="hidden" id="deleteQueryRequest" name="deleteQueryRequest">
-        Space Agency Name: <input type="text" name="insName" placeholder="e.g. Canadian Space Agency" required style="width: 200px;"> <br /><br />
+        Space Agency Name: <input type="text" name="insName" placeholder="e.g. Canadian Space Agency" required style="width: 350px;"> <br /><br />
         <input type="submit" value="Delete" name="deleteSubmit"></p>
     </form>
     <hr />
@@ -108,7 +132,7 @@ require_once("logic/queries.php");
     <h2>Projection Query</h2>
     <form method="GET" action="index.php">
         <input type="hidden" id="projectionRequest" name="projectionRequest">
-        Table Name: <input type="text" name="tableNameForDisplay" placeholder="e.g. Exoplanet_DiscoveredAt" required style="width: 200px;"><br><br>
+        Table Name: <input type="text" name="tableNameForDisplay" placeholder="e.g. Exoplanet_DiscoveredAt" required style="width: 350px;"><br><br>
         Attributes (comma-separated): <input type="text" name="attributes" placeholder="e.g. Name, Type" required> <br><br>
         <input type="submit" value="Project" name="projectionSubmit"></p>
     </form>

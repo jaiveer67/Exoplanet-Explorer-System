@@ -1,57 +1,76 @@
 <?php
-    require_once 'queries.php';
-    require_once 'connection.php';
+require_once 'queries.php';
+require_once 'connection.php';
+require_once 'helpers.php';
+session_start();
 
-    // Debugging messages
-    $show_debug_alert_messages = false;
+// Handle all POST and GET routes
+if (
+    isset($_POST['reset']) || isset($_POST['updateSubmit']) || 
+    isset($_POST['insertSubmit']) || isset($_POST['deleteSubmit'])
+) {
+    handlePOSTRequest();
+} elseif (
+    isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) ||
+    isset($_GET['projectionRequest']) || isset($_GET['groupSubmit']) ||
+    isset($_GET['havingSubmit']) || isset($_GET['joinSubmit']) ||
+    isset($_GET['selectQuerySubmit']) || isset($_GET['divisionSubmit']) ||
+    isset($_GET['nestedSubmit'])
+) {
+    handleGETRequest();
+}
 
-// HANDLE ALL POST ROUTES
+function handlePOSTRequest() {
+    if (connectToDB()) {
+        global $db_conn;
 
-if (isset($_POST['reset']) || isset($_POST['updateSubmit']) || isset($_POST['insertSubmit']) || isset($_POST['deleteSubmit']) ) {
-        handlePOSTRequest();
-    } else if (isset($_GET['countTupleRequest']) || isset($_GET['displayTuplesRequest']) || isset($_GET['projectionRequest']) || isset($_GET['groupSubmit']) || isset($_GET['havingSubmit']) || isset($_GET['joinSubmit']) || isset($_GET['selectQuerySubmit']) || isset($_GET['divisionSubmit']) || isset($_GET['nestedSubmit']))
-     {
-		handleGETRequest();
+        if (isset($_POST['resetTablesRequest'])) {
+            $res = handleResetRequest($db_conn);
+        } elseif (isset($_POST['updateQueryRequest'])) {
+            $res = handleUpdateRequest($db_conn, $_POST);
+        } elseif (isset($_POST['insertQueryRequest'])) {
+            $res = handleInsertRequest($db_conn, $_POST);
+        } elseif (isset($_POST['deleteQueryRequest'])) {
+            $res = handleDeleteRequest($db_conn, $_POST);
+        }
+
+        disconnectFromDB();
+        finalizeAndRedirect($res);
     }
-    
-	function handlePOSTRequest()
-	{
-		if (connectToDB()) {
-			if (array_key_exists('resetTablesRequest', $_POST)) {
-				handleResetRequest();
-			} else if (array_key_exists('updateQueryRequest', $_POST)) {
-				handleUpdateRequest();
-			} else if (array_key_exists('insertQueryRequest', $_POST)) {
-				handleInsertRequest();
-			} else if (array_key_exists('deleteQueryRequest', $_POST)) {
-				handleDeleteRequest();
-			}
-			disconnectFromDB();
-		}
-	}
+}
 
-	// HANDLE ALL GET ROUTES
-	function handleGETRequest()
-	{
-		if (connectToDB()) {
-			if (array_key_exists('displayTuples', $_GET)) {
-				handleDisplayRequest();
-			} elseif (array_key_exists('projectionSubmit', $_GET)){
-				handleProjectionRequest();
-			} elseif (array_key_exists('groupTuplesRequest', $_GET)){
-				handleGroupRequest();
-			} elseif (array_key_exists('havingTuplesRequest', $_GET)){
-				handleHavingRequest();
-			} elseif (array_key_exists('divisionRequest', $_GET)){ //divisionSubmit
-				handleDivisionRequest();
-			} elseif (array_key_exists('nestedRequest', $_GET)){
-				handleNestedRequest();
-			} elseif (array_key_exists('selectQueryRequest', $_GET)) {
-				handleSelectRequest();
-			} elseif (array_key_exists('joinQueryRequest', $_GET)) {
-				handleJoinRequest();
-			} 
-			disconnectFromDB();
-		}
-	}
+function handleGETRequest() {
+    if (connectToDB()) {
+        global $db_conn;
+
+        if (isset($_GET['displayTuples'])) {
+            $res = handleDisplayRequest($db_conn, $_GET["tableNameForDisplay"]);
+        } elseif (isset($_GET['projectionSubmit'])) {
+            $res = handleProjectionRequest($db_conn, $_GET["attributes"], $_GET["tableNameForDisplay"]);
+        } elseif (isset($_GET['groupTuplesRequest'])) {
+            $res = handleGroupRequest($db_conn);
+        } elseif (isset($_GET['havingTuplesRequest'])) {
+            $res = handleHavingRequest($db_conn);
+        } elseif (isset($_GET['divisionRequest'])) {
+            $res = handleDivisionRequest($db_conn);
+        } elseif (isset($_GET['nestedRequest'])) {
+            $res = handleNestedRequest($db_conn);
+        } elseif (isset($_GET['selectQueryRequest'])) {
+            $res = handleSelectRequest($db_conn, $_GET["Where"]);
+        } elseif (isset($_GET['joinQueryRequest'])) {
+            $res = handleJoinRequest($db_conn, $_GET["StellarClassClass"]);
+        }
+
+        disconnectFromDB();
+        finalizeAndRedirect($res);
+    }
+}
+
+function finalizeAndRedirect($res) {
+    $_SESSION['message'] = $res['message'] ?? null;
+    $_SESSION['results'] = $res['results'] ?? null;
+    $_SESSION['error'] = $res['error'] ?? null;
+    header("Location: index.php");
+    exit;
+}
 ?>

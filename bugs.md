@@ -1,1 +1,0 @@
-squery handlers are outputting HTML before the rest of page’s layout is rendered, so screen flashes and old layout is seen for split second

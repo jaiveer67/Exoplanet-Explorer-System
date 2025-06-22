@@ -11,6 +11,7 @@ body {
   background-size: cover;
   color: #fff;
   font-family: 'Segoe UI', sans-serif;
+  font-size: 24px;
 }
 
 .form-box {
@@ -24,6 +25,7 @@ body {
 h2 {
   color: #ffdd57;
   text-shadow: 1px 1px 3px #000;
+  font-size: 30px;
 }
 
 input, select, textarea {
@@ -31,6 +33,7 @@ input, select, textarea {
   color: #eee;
   border: 1px solid #666;
   padding: 6px;
+  font-size: 24px;
 }
 
 
@@ -53,10 +56,53 @@ hr {
   margin: 0 auto;
   border-collapse: collapse;
   color: #fff;
+  font-size: 20px
 }
 
 .results th, .results td {
-  border: 1px solid #ccc;
+  border: 1px solid #ffffff;
   padding: 8px 12px;
+  text-align: center;
+}
+
+input[type="submit"], button {
+    padding: 12px 24px;
+    font-size: 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+input[type="submit"]:hover, button:hover {
+    background-color: #0056b3;
+    transform: scale(1.03);
+}
+
+input[type="submit"]:active, button:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+select[name="tableNameForDisplay"] {
+  padding: 12px 24px;
+  font-size: 24px;
+  border-radius: 6px;
+  margin-top: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.3s ease, transform 0.1s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+select[name="tableNameForDisplay"]:hover {
+  border-color: #007BFF;
+  transform: scale(1.03);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+select[name="tableNameForDisplay"]:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
