@@ -1,4 +1,3 @@
-
 <?php
 try {
     $db_conn = new PDO('sqlite:db/exoplanet.db');
