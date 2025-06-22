@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once("logic/connection.php");
 require_once("logic/helpers.php");
 require_once("logic/queries.php");

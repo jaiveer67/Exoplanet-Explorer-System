@@ -2,7 +2,6 @@
 require_once 'queries.php';
 require_once 'connection.php';
 require_once 'helpers.php';
-session_start();
 
 // Handle all POST and GET routes
 if (
