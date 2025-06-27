@@ -1,4 +1,5 @@
 <?php
+
 function executePlainSQL($db, $cmdstr) {
     try {
         return $db->query($cmdstr);
@@ -89,6 +90,29 @@ function printResultArray($rows, $message = null) {
 
     $html .= "</table></div>";
     return $html;
+}
+
+function getColumnValues(PDO $conn, string $table, string $column): array {
+    $table = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+    $column = preg_replace('/[^a-zA-Z0-9_]/', '', $column);
+    try {
+        $stmt = $conn->prepare("SELECT DISTINCT $column FROM $table");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    } catch (PDOException $e) {
+        return [];
+    }
+}
+
+function getCommonStellarClasses($conn) {
+    $stmt = $conn->prepare("
+        SELECT DISTINCT sb.StellarClassClass
+        FROM Star_BelongsTo sb
+        INNER JOIN StellarClass sc ON sb.StellarClassClass = sc.Class
+        ORDER BY sb.StellarClassClass ASC
+    ");
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_COLUMN);
 }
 
 

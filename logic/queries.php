@@ -1,11 +1,11 @@
 <?php
 require_once 'helpers.php';
 
-	function handleJoinRequest($db, $stellarClass) {
+function handleJoinRequest($db, $stellarClass) {
     if (!empty($stellarClass)) {
         $whereClause = "WHERE Star_BelongsTo.StellarClassClass = StellarClass.Class AND Star_BelongsTo.StellarClassClass = :class";
     } else {
-        $whereClause = "";
+        $whereClause = "WHERE Star_BelongsTo.StellarClassClass = StellarClass.Class";
     }
 
     $sql = "SELECT * FROM Star_BelongsTo, StellarClass $whereClause";
@@ -16,8 +16,14 @@ require_once 'helpers.php';
     }
 
     $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    return [
+        'results' => $rows,
+        'message' => count($rows) > 0 ? "Join successful." : "No matching rows found."
+    ];
 }
+
 
 	function handleUpdateRequest($db, $post) {
     $id = $post['ID'] ?? '';
@@ -102,25 +108,37 @@ require_once 'helpers.php';
 }
 
 
-	function handleProjectionRequest($db, $attributes, $tableName) {
-    // Check if table exists
-    $stmt = $db->prepare("SELECT name FROM sqlite_master WHERE type='table' AND name = :name");
-    $stmt->bindValue(":name", $tableName);
-    $stmt->execute();
-    if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
-        return ["error" => "The table '{$tableName}' does not exist."];
+	function handleProjectionRequest($conn, $attributes, $table) {
+    if (!is_array($attributes) || empty($attributes)) {
+        return ['error' => 'No attributes selected.'];
     }
 
-    // Sanitize and build projection query
-    $safeAttributes = implode(", ", array_map('trim', explode(",", $attributes)));
+    $columns = array_map(function($attr) {
+        return preg_replace('/[^a-zA-Z0-9_]/', '', $attr);
+    }, $attributes);
+    $columnList = implode(", ", $columns);
 
-    $query = "SELECT DISTINCT $safeAttributes FROM $tableName";
+    $table = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+
+    // ✅ Additional safety check
+    if (empty($columnList) || empty($table)) {
+        return ['error' => 'Invalid table or attributes.'];
+    }
+
+    $query = "SELECT $columnList FROM $table";
+
     try {
-        $stmt = $db->query($query);
-        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return ["message" => "Projection successful.", "results" => $res];
-    } catch (Exception $e) {
-        return ["error" => "Invalid input. Check your attribute names and table name."];
+        $stmt = $conn->prepare($query);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return [
+            'results' => $rows,
+            'message' => "Projection successful for $table"
+        ];
+    } catch (PDOException $e) {
+        return [
+            'error' => "Query failed: " . $e->getMessage()
+        ];
     }
 }
 

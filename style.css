@@ -85,7 +85,7 @@ input[type="submit"]:active, button:active {
 }
 
 select[name="tableNameForDisplay"] {
-  padding: 12px 24px;
+  padding: 10px 16px;
   font-size: 24px;
   border-radius: 6px;
   margin-top: 24px;
@@ -106,3 +106,33 @@ select[name="tableNameForDisplay"]:active {
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+select[name="projectionTableName"] {
+  padding: 10px 16px;
+  font-size: 24px;
+  border-radius: 6px;
+  margin-top: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.3s ease, transform 0.1s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+select[name="projectionTableName"]:hover {
+  border-color: #007BFF;
+  transform: scale(1.03);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+select[name="projectionTableName"]:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+select[name="attribute1"],
+select[name="attribute2"] {
+  padding: 10px 16px;
+  font-size: 24px;
+  border-radius: 6px;
+  margin-top: 8px;
+  width: 300px;
+}

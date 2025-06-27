@@ -45,7 +45,15 @@ function handleGETRequest() {
         if (isset($_GET['displayTuples'])) {
             $res = handleDisplayRequest($db_conn, $_GET["tableNameForDisplay"]);
         } elseif (isset($_GET['projectionSubmit'])) {
-            $res = handleProjectionRequest($db_conn, $_GET["attributes"], $_GET["tableNameForDisplay"]);
+            $attr1 = $_GET["attribute1"] ?? null;
+            $attr2 = $_GET["attribute2"] ?? null;
+            $table = $_GET["projectionTableName"] ?? null;
+
+            if (!$attr1 || !$attr2) {
+                $res = ['error' => 'You must select two attributes.'];
+            } else {
+                $res = handleProjectionRequest($db_conn, [$attr1, $attr2], $table);
+            }
         } elseif (isset($_GET['groupTuplesRequest'])) {
             $res = handleGroupRequest($db_conn);
         } elseif (isset($_GET['havingTuplesRequest'])) {
