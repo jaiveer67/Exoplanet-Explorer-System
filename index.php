@@ -118,7 +118,7 @@ sort($researcherIDs, SORT_NUMERIC);
         <?php foreach ($commonStellarClasses as $Class): ?>
             <option value="<?= htmlspecialchars($Class) ?>"><?= htmlspecialchars($Class) ?></option>
         <?php endforeach; ?>
-        </select>
+        </select><br><br>
         <input type="submit" value="Join" name="joinSubmit">
     </form>
     <hr />
