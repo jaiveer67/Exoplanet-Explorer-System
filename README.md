@@ -10,7 +10,7 @@ https://exoplanet-explorer-system.onrender.com
 - Rishavpreet Singh  
 
 ## 🛠️ Current Maintainer & Ongoing Expansion  
-Originally created as a course project but I am no actively expanding on it. The backend has been migrated from Oracle SQL to **SQLite**, and the system has been adapted for public deployment beyond UBC infrastructure. Future goals include UI enhancements, expanded data sets, and interactive query features.
+Originally created as a course project but I am now actively expanding on it. The backend has been migrated from Oracle SQL to **SQLite**, and the system has been adapted for public deployment beyond UBC infrastructure. Future goals include UI enhancements, expanded data sets, and interactive query features.
 
 ---
 
