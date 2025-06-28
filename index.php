@@ -232,7 +232,7 @@ Attribute 2:
     attr1.innerHTML = '<option value="" disabled selected>Select attribute</option>';
     attr2.innerHTML = '<option value="" disabled selected>Select attribute</option>';
 
-    fetch(`get_columns.php?table=${encodeURIComponent(tableName)}`)
+    fetch(`logic/get_columns.php?table=${encodeURIComponent(tableName)}`)
       .then(res => res.json())
       .then(columns => {
         if (Array.isArray(columns)) {

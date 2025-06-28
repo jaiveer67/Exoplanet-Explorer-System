@@ -4,15 +4,33 @@
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  animation: starScroll 60s linear infinite;
 }
 
 body {
-  background-image: url('https://www.transparenttextures.com/patterns/stardust.png'), linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
-  background-size: cover;
+  background-image: 
+    url('https://www.transparenttextures.com/patterns/stardust.png'),
+    url('https://www.transparenttextures.com/patterns/stardust.png'),
+    linear-gradient(to bottom, #0f2027, #1e3841, #284b5b);
+    
+  background-repeat: repeat, repeat, no-repeat;
+  background-size: 600px 600px, 600px 600px, cover;
+  background-position: 0 0, 1000px 1000px, center;
   color: #fff;
   font-family: 'Segoe UI', sans-serif;
   font-size: 24px;
+  animation: starScroll 60s linear infinite;
 }
+
+@keyframes starScroll {
+  0% {
+    background-position: 0 0, 1000px 1000px, center;
+  }
+  100% {
+    background-position: 1000px 1000px, 0 0, center;
+  }
+}
+
 
 .form-box {
   background-color: rgba(0, 0, 0, 0.6);
